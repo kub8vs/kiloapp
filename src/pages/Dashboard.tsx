@@ -26,16 +26,37 @@ const Dashboard = () => {
   const [stats, setStats] = useState(getTodayStats());
   
   useEffect(() => {
+    // 1. Sprawdzenie onboardingu
     if (!isOnboardingCompleted()) {
       navigate('/onboarding');
     }
+
+    // 2. Inicjalizacja Chatbota
+    // Ustawienie kluczy w window
+    (window as any).aichatbotApiKey = "9197ef95-210d-42cf-875f-356fb4c2c33e";
+    (window as any).aichatbotProviderId = "f9e9c5e4-6d1a-4b8c-8d3f-3f9e9c5e46d1";
+
+    // Dynamiczne dodanie skryptu
+    const script = document.createElement('script');
+    script.src = "https://script.chatlab.com/aichatbot.js";
+    script.id = "9197ef95-210d-42cf-875f-356fb4c2c33e";
+    script.defer = true;
+    document.body.appendChild(script);
+
+    // Opcjonalne: usuwanie skryptu przy odmontowaniu komponentu
+    return () => {
+      const existingScript = document.getElementById("9197ef95-210d-42cf-875f-356fb4c2c33e");
+      if (existingScript) {
+        document.body.removeChild(existingScript);
+      }
+    };
   }, [navigate]);
 
   const goals = profile ? calculateDailyGoals(profile) : null;
   
   const today = new Date();
   const dayOfWeek = today.getDay();
-  const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Monday = 0
+  const adjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1; 
 
   const formatDate = () => {
     const options: Intl.DateTimeFormatOptions = { 
@@ -144,7 +165,6 @@ const Dashboard = () => {
           </div>
           
           <div className="flex justify-around">
-            {/* Protein */}
             <div className="flex flex-col items-center">
               <ProgressRing 
                 progress={proteinProgress} 
@@ -160,7 +180,6 @@ const Dashboard = () => {
               </p>
             </div>
             
-            {/* Carbs */}
             <div className="flex flex-col items-center">
               <ProgressRing 
                 progress={carbsProgress} 
@@ -176,7 +195,6 @@ const Dashboard = () => {
               </p>
             </div>
             
-            {/* Fat */}
             <div className="flex flex-col items-center">
               <ProgressRing 
                 progress={fatProgress} 
@@ -191,28 +209,6 @@ const Dashboard = () => {
                 <span className="text-muted-foreground">/{goals.fat}g</span>
               </p>
             </div>
-          </div>
-        </motion.div>
-
-        {/* Last Meal Card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="kilo-card"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500/20 to-red-500/20 flex items-center justify-center text-3xl">
-                🥗
-              </div>
-              <div>
-                <p className="text-muted-foreground text-sm">Ostatni posiłek</p>
-                <p className="font-semibold">Sałatka z kurczakiem</p>
-                <p className="text-sm text-muted-foreground">420 kcal • 35g białka</p>
-              </div>
-            </div>
-            <ChevronRight size={20} className="text-muted-foreground" />
           </div>
         </motion.div>
 
@@ -231,7 +227,7 @@ const Dashboard = () => {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.5 + index * 0.05 }}
                 onClick={() => navigate(action.path)}
-                className="quick-action"
+                className="flex flex-col items-center gap-2"
               >
                 <div className="w-12 h-12 rounded-2xl bg-foreground/10 flex items-center justify-center">
                   <action.icon size={24} />
