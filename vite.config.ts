@@ -7,17 +7,17 @@ import { VitePWA } from "vite-plugin-pwa";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
-    port: 8080,
+    host: "::", //
+    port: 8080, //
   },
   plugins: [
-    react(),
-    mode === "development" && componentTagger(),
+    react(), //
+    mode === "development" && componentTagger(), //
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.ico", "apple-touch-icon.png", "placeholder.svg"],
+      includeAssets: ["favicon.ico", "placeholder.svg"],
       manifest: {
-        name: "KiloApp - Moja Aplikacja",
+        name: "KiloApp",
         short_name: "KiloApp",
         description: "Moja osobista aplikacja na serwerze",
         theme_color: "#000000",
@@ -44,10 +44,10 @@ export default defineConfig(({ mode }) => ({
         ],
       },
     }),
-  ].filter(Boolean),
+  ].filter(Boolean), //
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"),
+      "@": path.resolve(__dirname, "./src"), //
     },
   },
 }));
