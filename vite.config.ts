@@ -7,12 +7,17 @@ import { VitePWA } from "vite-plugin-pwa";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::", //
-    port: 8080, //
+    host: "::",
+    port: 8080,
+    // Ta sekcja pozwala ngrok na łączenie się z Twoim serwerem Vite
+    allowedHosts: [
+      "microtonal-fairy-musaceous.ngrok-free.dev", // Twój aktualny adres
+      ".ngrok-free.dev" // Pozwala na dowolną subdomenę ngrok w przyszłości
+    ],
   },
   plugins: [
-    react(), //
-    mode === "development" && componentTagger(), //
+    react(),
+    mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "placeholder.svg"],
@@ -44,10 +49,10 @@ export default defineConfig(({ mode }) => ({
         ],
       },
     }),
-  ].filter(Boolean), //
+  ].filter(Boolean),
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"), //
+      "@": path.resolve(__dirname, "./src"),
     },
   },
 }));

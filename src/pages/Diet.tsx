@@ -1,267 +1,196 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  ScanLine, 
-  Camera, 
-  Plus, 
-  Search,
-  ChefHat,
-  ShoppingBag,
-  ChevronRight 
-} from 'lucide-react';
-import AppLayout from '@/components/layout/AppLayout';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProgressRing from '@/components/ui/ProgressRing';
-import { getUserProfile, calculateDailyGoals, getTodayStats } from '@/lib/user-store';
+import { useState, useRef, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import Webcam from "react-webcam";
+import { Camera, X, Check, Loader2, Sparkles, Utensils } from "lucide-react";
+import AppLayout from "@/components/layout/AppLayout";
+import { useToast } from "@/hooks/use-toast";
 
-const meals = [
-  { id: 1, name: 'Śniadanie', time: '8:00', calories: 450, items: ['Jajecznica', 'Tost', 'Awokado'] },
-  { id: 2, name: 'Obiad', time: '13:00', calories: 680, items: ['Kurczak', 'Ryż', 'Brokuły'] },
-  { id: 3, name: 'Przekąska', time: '16:00', calories: 180, items: ['Jogurt grecki', 'Orzechy'] },
-];
-
-const recipes = [
-  { id: 1, name: 'Bowl proteinowy', calories: 520, protein: 42, time: '15 min', emoji: '🥗' },
-  { id: 2, name: 'Shakshuka fit', calories: 380, protein: 28, time: '20 min', emoji: '🍳' },
-  { id: 3, name: 'Wrap z indykiem', calories: 450, protein: 35, time: '10 min', emoji: '🌯' },
-  { id: 4, name: 'Smoothie bowl', calories: 320, protein: 24, time: '5 min', emoji: '🫐' },
-];
-
-const fridgeItems = [
-  { name: 'Jajka', qty: '12 szt', emoji: '🥚' },
-  { name: 'Pierś z kurczaka', qty: '500g', emoji: '🍗' },
-  { name: 'Brokuły', qty: '300g', emoji: '🥦' },
-  { name: 'Ryż basmati', qty: '1kg', emoji: '🍚' },
-  { name: 'Jogurt grecki', qty: '400g', emoji: '🥛' },
-];
+// Stylistyka szklanych kart (Glassmorphism)
+const glassStyle = "bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl";
 
 const Diet = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const profile = getUserProfile();
-  const stats = getTodayStats();
-  const goals = profile ? calculateDailyGoals(profile) : null;
+  const { toast } = useToast();
+  const [isScanning, setIsScanning] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [scanResult, setScanResult] = useState<null | any>(null);
+  const webcamRef = useRef<Webcam>(null);
 
-  if (!goals) return null;
+  // Funkcja "Skanowania" - robi zdjęcie i przechodzi do podglądu danych
+  const handleCapture = useCallback(() => {
+    setIsAnalyzing(true);
+    
+    // Symulujemy czas potrzebny na "przetworzenie" obrazu przez skaner
+    setTimeout(() => {
+      const mockResult = {
+        name: "Rozpoznany Posiłek",
+        calories: 385,
+        protein: 24,
+        carbs: 45,
+        fat: 12
+      };
+      setScanResult(mockResult);
+      setIsAnalyzing(false);
+    }, 2000);
+  }, []);
 
-  const totalCalories = meals.reduce((acc, m) => acc + m.calories, 0);
-  const caloriesProgress = (totalCalories / goals.calories) * 100;
+  const confirmMeal = () => {
+    toast({
+      title: "Sukces!",
+      description: "Posiłek został dodany do Twojego dziennika.",
+    });
+    setIsScanning(false);
+    setScanResult(null);
+  };
 
   return (
     <AppLayout>
-      <div className="px-5 pt-12 pb-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
-          <h1 className="text-3xl font-bold">Dieta</h1>
-          <p className="text-muted-foreground">Zarządzaj swoim żywieniem</p>
-        </motion.div>
-
-        {/* Daily Summary */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="kilo-card mb-6"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-muted-foreground text-sm">Dzisiaj</p>
-              <p className="text-3xl font-bold">
-                {totalCalories}
-                <span className="text-lg text-muted-foreground font-normal">
-                  /{goals.calories} kcal
-                </span>
-              </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Pozostało: {goals.calories - totalCalories} kcal
-              </p>
-            </div>
-            <ProgressRing progress={caloriesProgress} size={80} strokeWidth={6}>
-              <span className="text-sm font-bold">{Math.round(caloriesProgress)}%</span>
-            </ProgressRing>
+      <div className="px-5 pt-12 pb-24 space-y-6">
+        <header className="flex justify-between items-end">
+          <div>
+            <p className="text-muted-foreground text-xs uppercase font-bold tracking-widest">Twoja Dieta</p>
+            <h1 className="text-3xl font-black tracking-tighter uppercase italic">Dziennik</h1>
           </div>
-        </motion.div>
-
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 gap-3 mb-6"
-        >
-          <Button 
-            variant="outline" 
-            className="h-16 rounded-2xl border-0 bg-card flex items-center justify-center gap-3"
+          <motion.button 
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsScanning(true)}
+            className="flex items-center gap-2 bg-foreground text-background px-6 py-3 rounded-2xl font-black text-xs uppercase tracking-tighter"
           >
-            <ScanLine size={24} />
-            <span>Skanuj kod</span>
-          </Button>
-          <Button 
-            variant="outline" 
-            className="h-16 rounded-2xl border-0 bg-card flex items-center justify-center gap-3"
-          >
-            <Camera size={24} />
-            <span>Skanuj paragon</span>
-          </Button>
-        </motion.div>
+            <Camera size={18} /> Skanuj
+          </motion.button>
+        </header>
 
-        {/* Tabs */}
-        <Tabs defaultValue="meals">
-          <TabsList className="grid w-full grid-cols-3 bg-card rounded-2xl h-12 mb-6">
-            <TabsTrigger value="meals" className="rounded-xl data-[state=active]:bg-foreground data-[state=active]:text-background">
-              Posiłki
-            </TabsTrigger>
-            <TabsTrigger value="recipes" className="rounded-xl data-[state=active]:bg-foreground data-[state=active]:text-background">
-              Przepisy
-            </TabsTrigger>
-            <TabsTrigger value="fridge" className="rounded-xl data-[state=active]:bg-foreground data-[state=active]:text-background">
-              Lodówka
-            </TabsTrigger>
-          </TabsList>
+        {/* Widok domyślny strony Dieta */}
+        <div className={`p-10 text-center rounded-[2.5rem] ${glassStyle}`}>
+          <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4">
+            <Utensils className="text-muted-foreground" size={32} />
+          </div>
+          <p className="text-muted-foreground font-medium italic">Kliknij przycisk powyżej,<br/>aby dodać posiłek aparatem.</p>
+        </div>
 
-          <TabsContent value="meals" className="space-y-4">
-            {/* Search */}
-            <div className="relative">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Szukaj produktu..."
-                className="h-12 pl-12 bg-card border-0 rounded-2xl"
-              />
-            </div>
-
-            {/* Meals */}
-            {meals.map((meal, index) => (
-              <motion.div
-                key={meal.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.1 }}
-                className="kilo-card"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold">{meal.name}</span>
-                      <span className="text-xs text-muted-foreground">{meal.time}</span>
+        {/* MODAL APARATU I SKANERA */}
+        <AnimatePresence>
+          {isScanning && (
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[120] bg-black flex flex-col"
+            >
+              {!scanResult ? (
+                <div className="relative flex-1 flex flex-col items-center justify-center overflow-hidden">
+                  {/* Podgląd kamery */}
+                  <Webcam
+                    audio={false}
+                    ref={webcamRef}
+                    screenshotFormat="image/jpeg"
+                    className="h-full w-full object-cover"
+                    videoConstraints={{ facingMode: "environment" }} // Używa tylnej kamery
+                  />
+                  
+                  {/* Elementy graficzne skanera (Celownik) */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="relative w-72 h-72">
+                      {/* Narożniki celownika */}
+                      <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-3xl" />
+                      <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-3xl" />
+                      <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-3xl" />
+                      <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-3xl" />
+                      
+                      {/* Animowana linia skanująca */}
+                      <motion.div 
+                        animate={{ top: ["0%", "100%", "0%"] }}
+                        transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+                        className="absolute left-0 right-0 h-1 bg-white/50 shadow-[0_0_20px_rgba(255,255,255,0.8)] z-10"
+                      />
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      {meal.items.join(' • ')}
+                  </div>
+
+                  {/* UI Sterowania aparatem */}
+                  <div className="absolute bottom-12 w-full px-10 flex justify-between items-center">
+                    <button 
+                      onClick={() => setIsScanning(false)} 
+                      className="p-4 bg-white/10 backdrop-blur-md rounded-full text-white border border-white/20"
+                    >
+                      <X size={24} />
+                    </button>
+
+                    <button 
+                      onClick={handleCapture}
+                      disabled={isAnalyzing}
+                      className="group relative w-20 h-20 bg-white rounded-full flex items-center justify-center shadow-2xl disabled:opacity-50"
+                    >
+                      {isAnalyzing ? (
+                        <Loader2 className="animate-spin text-black" size={32} />
+                      ) : (
+                        <div className="w-16 h-16 border-2 border-black rounded-full group-active:scale-90 transition-transform" />
+                      )}
+                    </button>
+
+                    <div className="w-14" /> {/* Spacer dla balansu wizualnego */}
+                  </div>
+
+                  {/* Napis informacyjny */}
+                  <div className="absolute top-16 w-full text-center">
+                    <p className="text-white/70 text-[10px] uppercase font-black tracking-[0.3em] bg-black/20 backdrop-blur-md py-2 inline-block px-6 rounded-full border border-white/10">
+                      System Skanowania Aktywny
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold">{meal.calories}</p>
-                    <p className="text-xs text-muted-foreground">kcal</p>
+                </div>
+              ) : (
+                /* EKRAN WYNIKU SKANOWANIA */
+                <motion.div 
+                  initial={{ y: 100, opacity: 0 }} 
+                  animate={{ y: 0, opacity: 1 }}
+                  className="flex-1 bg-background p-6 flex flex-col justify-center items-center"
+                >
+                  <div className={`w-full max-w-sm p-8 rounded-[3rem] space-y-8 ${glassStyle}`}>
+                    <div className="text-center space-y-2">
+                      <div className="w-20 h-20 bg-foreground/10 rounded-[2rem] flex items-center justify-center mx-auto mb-4 border border-white/10">
+                        <Sparkles className="text-foreground" size={32} />
+                      </div>
+                      <h2 className="text-3xl font-black uppercase italic tracking-tighter">Wynik</h2>
+                      <p className="text-muted-foreground uppercase text-[10px] font-bold tracking-widest">{scanResult.name}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-white/5 p-5 rounded-3xl border border-white/5 text-center">
+                        <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1 tracking-widest">Kcal</p>
+                        <p className="text-2xl font-black">{scanResult.calories}</p>
+                      </div>
+                      <div className="bg-white/5 p-5 rounded-3xl border border-white/5 text-center">
+                        <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1 tracking-widest" style={{color: 'hsl(var(--kilo-protein))'}}>Białko</p>
+                        <p className="text-2xl font-black">{scanResult.protein}g</p>
+                      </div>
+                      <div className="bg-white/5 p-5 rounded-3xl border border-white/5 text-center">
+                        <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1 tracking-widest" style={{color: 'hsl(var(--kilo-carbs))'}}>Węgle</p>
+                        <p className="text-2xl font-black">{scanResult.carbs}g</p>
+                      </div>
+                      <div className="bg-white/5 p-5 rounded-3xl border border-white/5 text-center">
+                        <p className="text-muted-foreground text-[10px] uppercase font-bold mb-1 tracking-widest" style={{color: 'hsl(var(--kilo-fat))'}}>Tłuszcz</p>
+                        <p className="text-2xl font-black">{scanResult.fat}g</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4 pt-4">
+                      <button 
+                        onClick={() => setScanResult(null)}
+                        className="flex-1 py-5 rounded-3xl border border-white/10 font-bold uppercase text-[10px] tracking-widest active:bg-white/5 transition-colors"
+                      >
+                        Ponów
+                      </button>
+                      <button 
+                        onClick={confirmMeal}
+                        className="flex-[2] py-5 rounded-3xl bg-foreground text-background font-black uppercase text-[10px] tracking-widest shadow-xl active:scale-95 transition-transform"
+                      >
+                        Dodaj teraz
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-
-            {/* Add Meal */}
-            <Button
-              variant="outline"
-              className="w-full h-14 rounded-2xl border-dashed"
-            >
-              <Plus size={20} className="mr-2" />
-              Dodaj posiłek
-            </Button>
-          </TabsContent>
-
-          <TabsContent value="recipes" className="space-y-4">
-            {/* AI Suggestion */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="kilo-card bg-gradient-to-br from-card to-card/50"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-foreground/10 flex items-center justify-center">
-                  <ChefHat size={28} />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold">AI Chef</p>
-                  <p className="text-sm text-muted-foreground">
-                    Generuj przepisy z produktów w lodówce
-                  </p>
-                </div>
-                <ChevronRight size={20} className="text-muted-foreground" />
-              </div>
+                </motion.div>
+              )}
             </motion.div>
-
-            {/* Recipes Grid */}
-            <div className="grid grid-cols-2 gap-3">
-              {recipes.map((recipe, index) => (
-                <motion.div
-                  key={recipe.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="kilo-card"
-                >
-                  <div className="text-4xl mb-3">{recipe.emoji}</div>
-                  <p className="font-semibold text-sm mb-1">{recipe.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {recipe.calories} kcal • {recipe.protein}g białka
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">⏱ {recipe.time}</p>
-                </motion.div>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="fridge" className="space-y-4">
-            {/* Scan Receipt */}
-            <motion.button
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full kilo-card flex items-center gap-4"
-            >
-              <div className="w-14 h-14 rounded-2xl bg-foreground/10 flex items-center justify-center">
-                <ShoppingBag size={28} />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-semibold">Skanuj paragon</p>
-                <p className="text-sm text-muted-foreground">
-                  AI automatycznie doda produkty
-                </p>
-              </div>
-              <ChevronRight size={20} className="text-muted-foreground" />
-            </motion.button>
-
-            {/* Fridge Items */}
-            <div className="space-y-3">
-              {fridgeItems.map((item, index) => (
-                <motion.div
-                  key={item.name}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className="kilo-card flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{item.emoji}</span>
-                    <span className="font-medium">{item.name}</span>
-                  </div>
-                  <span className="text-muted-foreground">{item.qty}</span>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Add Item */}
-            <Button
-              variant="outline"
-              className="w-full h-14 rounded-2xl border-dashed"
-            >
-              <Plus size={20} className="mr-2" />
-              Dodaj produkt
-            </Button>
-          </TabsContent>
-        </Tabs>
+          )}
+        </AnimatePresence>
       </div>
     </AppLayout>
   );
