@@ -7,12 +7,12 @@ import { VitePWA } from "vite-plugin-pwa";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "::",
+    host: "0.0.0.0", // Słuchaj na wszystkich interfejsach IPv4
     port: 8080,
-    // Ta sekcja pozwala ngrok na łączenie się z Twoim serwerem Vite
+    strictPort: true, // Ważne, aby port się nie zmienił nagle na 8081
     allowedHosts: [
-      "microtonal-fairy-musaceous.ngrok-free.dev", // Twój aktualny adres
-      ".ngrok-free.dev" // Pozwala na dowolną subdomenę ngrok w przyszłości
+      "microtonal-fairy-musaceous.ngrok-free.dev",
+      ".ngrok-free.dev"
     ],
   },
   plugins: [
