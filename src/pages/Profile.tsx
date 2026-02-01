@@ -1,66 +1,59 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { User, ShoppingBasket, Trash2, CheckCircle2, LogOut, Settings } from 'lucide-react';
-import AppLayout from '@/components/layout/AppLayout';
-import { getUserProfile, clearUserProfile, getShoppingList, removeFromShoppingList } from '@/lib/user-store';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { User, LogOut, Sun, Moon, Shield } from "lucide-react";
+import AppLayout from "@/components/layout/AppLayout";
+import * as Store from "@/lib/user-store";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const profile = getUserProfile();
-  const [items, setItems] = useState(getShoppingList());
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  if (!profile) return null;
-
-  const handleLogout = () => {
-    if(confirm("Czy na pewno chcesz wyczyścić wszystkie swoje dane?")) {
-      clearUserProfile();
+  useEffect(() => {
+    const data = Store.getUserProfile();
+    if (!data) {
       navigate('/onboarding');
+    } else {
+      setProfile(data);
+      if (data.theme === 'dark') document.documentElement.classList.add('dark');
+      setLoading(false);
     }
-  };
+  }, [navigate]);
 
-  const refresh = () => setItems(getShoppingList());
+  if (loading || !profile) return <div className="min-h-screen bg-black" />;
+
+  const toggleTheme = () => {
+    const newTheme = profile.theme === 'dark' ? 'light' : 'dark';
+    Store.updateExtendedProfile({ theme: newTheme });
+    document.documentElement.classList.toggle('dark');
+    setProfile({ ...profile, theme: newTheme });
+  };
 
   return (
     <AppLayout>
-      <div className="px-5 pt-12 pb-24 space-y-8">
-        <header className="flex justify-between items-center">
-          <h1 className="text-2xl font-black uppercase italic tracking-tighter">Mój Profil</h1>
-          <button onClick={handleLogout} className="text-red-500 p-2"><LogOut size={20} /></button>
+      <div className={`px-5 pt-12 pb-32 min-h-screen transition-all ${profile.theme === 'dark' ? 'bg-black text-white' : 'bg-zinc-50 text-zinc-900'}`}>
+        <header className="flex justify-between items-center mb-10">
+          <h1 className="text-4xl font-black uppercase italic tracking-tighter leading-none">PROFIL</h1>
+          <button onClick={toggleTheme} className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-2xl">
+            {profile.theme === 'dark' ? <Sun className="text-yellow-400" /> : <Moon className="text-blue-600" />}
+          </button>
         </header>
 
-        <div className="flex items-center gap-5 p-6 bg-white/5 rounded-[2.5rem] border border-white/10">
-          <div className="w-16 h-16 rounded-2xl bg-foreground/10 flex items-center justify-center"><User size={32} /></div>
-          <div>
-            <h2 className="text-xl font-black uppercase italic">{profile.name}</h2>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{profile.weight}kg • {profile.height}cm</p>
+        <section className="p-10 rounded-[3rem] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 flex flex-col items-center gap-4 text-center">
+          <div className="w-32 h-32 rounded-[2.5rem] bg-zinc-800 flex items-center justify-center border-4 border-blue-600">
+             {profile.avatar ? <img src={profile.avatar} className="w-full h-full object-cover rounded-[2.5rem]" /> : <User size={48} className="text-zinc-600" />}
           </div>
-        </div>
-
-        <section className="space-y-4">
-          <h3 className="font-black uppercase text-xs italic tracking-widest px-2">Lista Zakupów</h3>
-          {items.length === 0 ? (
-            <div className="p-10 text-center bg-white/5 rounded-[2rem] border border-dashed border-white/10">
-              <ShoppingBasket className="mx-auto mb-2 opacity-20" size={32} />
-              <p className="text-[10px] text-muted-foreground font-bold uppercase">Brak produktów</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {items.map(item => (
-                <div key={item.id} className="flex justify-between items-center p-4 bg-white/5 rounded-2xl border border-white/5">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 size={18} className="text-primary/40" />
-                    <div><p className="text-sm font-bold leading-none">{item.name}</p><p className="text-[9px] text-muted-foreground mt-1 uppercase">{item.amount} {item.unit}</p></div>
-                  </div>
-                  <button onClick={() => { removeFromShoppingList(item.id); refresh(); }} className="text-red-500/30"><Trash2 size={16} /></button>
-                </div>
-              ))}
-            </div>
-          )}
+          <h2 className="text-3xl font-black uppercase italic">{profile.name}</h2>
+          <p className="font-bold opacity-50">{profile.weight}kg • {profile.height}cm</p>
         </section>
 
-        <div className="pt-4 px-2">
-          <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-[0.3em] text-center">Dane przechowywane lokalnie na tym urządzeniu</p>
-        </div>
+        <button 
+          onClick={() => { if(confirm("Czy na pewno chcesz usunąć wszystkie dane?")) Store.clearUserProfile(); }}
+          className="w-full mt-10 p-6 bg-red-500/10 border border-red-500/20 rounded-[2rem] flex justify-between items-center text-red-500 active:scale-95 transition-all"
+        >
+          <span className="font-black uppercase italic tracking-widest">Zresetuj Aplikację</span>
+          <LogOut size={20} />
+        </button>
       </div>
     </AppLayout>
   );
