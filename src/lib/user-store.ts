@@ -1,4 +1,5 @@
-// --- INTERFEJSY ---
+// src/lib/user-store.ts
+
 export interface UserProfile {
   name: string;
   age: number;
@@ -26,7 +27,9 @@ export interface DailyStats {
 const KEYS = {
   PROFILE: 'kilo_user_profile',
   STATS: 'kilo_daily_stats',
-  SHOPPING: 'kilo_shopping_list'
+  SHOPPING: 'kilo_shopping_list',
+  ROUTINES: 'kilo_routines',
+  HISTORY: 'kilo_history'
 };
 
 // --- PROFIL ---
@@ -43,7 +46,7 @@ export const saveUserProfile = (profile: UserProfile): void => {
 
 export const clearUserProfile = () => {
   localStorage.clear();
-  window.location.reload();
+  window.location.href = '/';
 };
 
 export const isOnboardingCompleted = (): boolean => {
@@ -51,7 +54,7 @@ export const isOnboardingCompleted = (): boolean => {
   return !!profile?.onboardingCompleted;
 };
 
-// --- STATYSTYKI DZIENNE ---
+// --- STATYSTYKI ---
 export const getTodayStats = (): DailyStats => {
   const today = new Date().toISOString().split('T')[0];
   try {
@@ -68,48 +71,99 @@ export const saveDailyStats = (stats: DailyStats): void => {
   localStorage.setItem(KEYS.STATS, JSON.stringify(stats));
 };
 
-// --- LISTA ZAKUPÓW ---
-export const getShoppingList = () => {
+// --- TRENINGI (Dla Workout.tsx) ---
+export const getWorkoutRoutines = () => {
   try {
-    const data = localStorage.getItem(KEYS.SHOPPING);
+    const data = localStorage.getItem(KEYS.ROUTINES);
     return data ? JSON.parse(data) : [];
   } catch (e) { return []; }
 };
 
-export const addToShoppingList = (name: string, ingredients: string[]) => {
-  const current = getShoppingList();
-  const newItem = { id: Date.now().toString(), name, ingredients };
-  localStorage.setItem(KEYS.SHOPPING, JSON.stringify([...current, newItem]));
+export const saveRoutine = (routine: any) => {
+  const current = getWorkoutRoutines();
+  const exists = current.findIndex((r: any) => r.id === routine.id);
+  
+  let updated;
+  if (exists > -1) {
+    updated = [...current];
+    updated[exists] = routine;
+  } else {
+    updated = [...current, routine];
+  }
+  
+  localStorage.setItem(KEYS.ROUTINES, JSON.stringify(updated));
 };
 
-export const removeFromShoppingList = (id: string) => {
-  const current = getShoppingList();
-  localStorage.setItem(KEYS.SHOPPING, JSON.stringify(current.filter((i: any) => i.id !== id)));
+export const deleteRoutine = (id: string) => {
+  const current = getWorkoutRoutines();
+  localStorage.setItem(KEYS.ROUTINES, JSON.stringify(current.filter((r: any) => r.id !== id)));
+};
+
+export const getWorkoutHistory = () => {
+  try {
+    const data = localStorage.getItem(KEYS.HISTORY);
+    return data ? JSON.parse(data) : [];
+  } catch (e) { return []; }
+};
+
+export const addToHistory = (entry: any) => {
+  const history = getWorkoutHistory();
+  // Dodajemy na początek listy, aby najnowsze były u góry
+  localStorage.setItem(KEYS.HISTORY, JSON.stringify([entry, ...history]));
+};
+
+export const deleteHistoryItem = (id: string) => {
+  const history = getWorkoutHistory();
+  localStorage.setItem(KEYS.HISTORY, JSON.stringify(history.filter((h: any) => h.id !== id)));
+};
+
+export const clearHistory = () => localStorage.removeItem(KEYS.HISTORY);
+
+// --- DIETA (Dla Diet.tsx i Dashboard.tsx) ---
+export const addToShoppingList = (name: string, ingredients: string[]) => {
+  try {
+    const data = localStorage.getItem(KEYS.SHOPPING);
+    const list = data ? JSON.parse(data) : [];
+    list.push({ id: Date.now().toString(), name, ingredients });
+    localStorage.setItem(KEYS.SHOPPING, JSON.stringify(list));
+  } catch (e) {}
 };
 
 // --- KALKULATOR CELÓW ---
 export const calculateDailyGoals = (profile: UserProfile) => {
   const { weight, height, age, gender, activityLevel, goal } = profile;
+  
+  // BMR (Mifflin-St Jeor)
   let bmr = (10 * weight) + (6.25 * height) - (5 * age);
   bmr = gender === 'male' ? bmr + 5 : bmr - 161;
+  
+  // Mnożniki aktywności
   const multipliers = [1.2, 1.375, 1.55, 1.725, 1.9];
   const tdee = bmr * multipliers[activityLevel - 1];
-  let kcal = goal === 'cut' ? tdee - 500 : goal === 'bulk' ? tdee + 300 : tdee;
+  
+  // Definiowanie kalorii na podstawie celu
+  let kcal = tdee;
+  if (goal === 'cut') kcal = tdee - 500;
+  else if (goal === 'bulk') kcal = tdee + 300;
+  
   return {
     calories: Math.round(kcal),
-    protein: Math.round(weight * 2),
-    carbs: Math.round((kcal * 0.5) / 4),
-    fat: Math.round((kcal * 0.25) / 9),
+    protein: Math.round(weight * 2), // Standard: 2g na kg
+    carbs: Math.round((kcal * 0.5) / 4), // 50% kcal z węgli
+    fat: Math.round((kcal * 0.25) / 9), // 25% kcal z tłuszczy
     steps: 10000
   };
 };
 
 export const updateExtendedProfile = (updates: any) => {
   const current = getUserProfile();
-  if (current) saveUserProfile({ ...current, ...updates });
+  if (current) {
+    const updated = { ...current, ...updates };
+    saveUserProfile(updated);
+    
+    // Jeśli aktualizujemy motyw, zaaplikuj go do dokumentu
+    if (updates.theme) {
+      document.documentElement.classList.toggle('dark', updates.theme === 'dark');
+    }
+  }
 };
-
-export const addToHistory = (entry: any): void => {
-  const history = getWorkoutHistory();
-  localStorage.setItem('kilo_history', JSON.stringify([entry, ...history]));
-};    
