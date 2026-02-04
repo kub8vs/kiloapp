@@ -6,6 +6,11 @@ import {
   X, Zap, Timer, MapPin, Flame, Clock,
   BrainCircuit, Send, MessageSquare, ChevronLeft 
 } from 'lucide-react';
+
+// --- DODANE IMPORTY FIREBASE ---
+import { auth } from '@/lib/firebase';
+import { signInAnonymously } from 'firebase/auth';
+
 import AppLayout from '@/components/layout/AppLayout';
 import ProgressRing from '@/components/ui/ProgressRing';
 import { 
@@ -36,6 +41,15 @@ const Dashboard = () => {
   const [chat, setChat] = useState<{role: string, text: string}[]>([]);
   const [isTyping, setIsTyping] = useState(false);
 
+  // --- DODANY EFFECT DO LOGOWANIA ANONIMOWEGO ---
+  useEffect(() => {
+    if (!auth.currentUser) {
+      signInAnonymously(auth)
+        .then(() => console.log("Połączono z Firebase (Elite Anonymous Mode)"))
+        .catch((err) => console.error("Błąd połączenia z bazą:", err));
+    }
+  }, []);
+  
   useEffect(() => {
     if (!isOnboardingCompleted()) {
       navigate('/onboarding');

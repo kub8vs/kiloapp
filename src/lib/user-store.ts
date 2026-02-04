@@ -32,16 +32,15 @@ const KEYS = {
   HISTORY: 'kilo_history'
 };
 
-// --- BEZPIECZNA SYNCHRONIZACJA Z FIREBASE ---
+// --- SYNCHRONIZACJA Z CHMURĄ ---
 const syncToCloud = async (key: string, data: any) => {
   try {
     const user = auth?.currentUser;
     if (!user) return; 
-
     const userRef = doc(db, "users", user.uid);
     await setDoc(userRef, { [key]: data }, { merge: true });
   } catch (e) {
-    console.warn("Firebase Sync skipped:", e);
+    console.warn("Błąd synchronizacji Firebase:", e);
   }
 };
 
@@ -56,6 +55,17 @@ export const getUserProfile = (): UserProfile | null => {
 export const saveUserProfile = (profile: UserProfile): void => {
   localStorage.setItem(KEYS.PROFILE, JSON.stringify(profile));
   syncToCloud('profile', profile);
+};
+
+export const updateExtendedProfile = (updates: Partial<UserProfile>) => {
+  const current = getUserProfile();
+  if (current) {
+    const updated = { ...current, ...updates };
+    saveUserProfile(updated);
+    if (updates.theme) {
+      document.documentElement.classList.toggle('dark', updates.theme === 'dark');
+    }
+  }
 };
 
 export const isOnboardingCompleted = (): boolean => {
@@ -87,7 +97,7 @@ export const saveDailyStats = (stats: DailyStats): void => {
   syncToCloud('stats', stats);
 };
 
-// --- TRENINGI I HISTORIA ---
+// --- TRENINGI I HISTORIA (Rozwiązuje błąd Workout.tsx) ---
 export const getWorkoutRoutines = () => {
   try {
     const data = localStorage.getItem(KEYS.ROUTINES);
@@ -101,7 +111,13 @@ export const saveRoutine = (routine: any) => {
   const updated = exists > -1 
     ? current.map((r: any) => r.id === routine.id ? routine : r) 
     : [...current, routine];
-  
+  localStorage.setItem(KEYS.ROUTINES, JSON.stringify(updated));
+  syncToCloud('routines', updated);
+};
+
+export const deleteRoutine = (id: string) => {
+  const current = getWorkoutRoutines();
+  const updated = current.filter((r: any) => r.id !== id);
   localStorage.setItem(KEYS.ROUTINES, JSON.stringify(updated));
   syncToCloud('routines', updated);
 };
@@ -114,14 +130,10 @@ export const getWorkoutHistory = () => {
 };
 
 export const addToHistory = (entry: any) => {
-  try {
-    const history = getWorkoutHistory();
-    const updated = [entry, ...history];
-    localStorage.setItem(KEYS.HISTORY, JSON.stringify(updated));
-    syncToCloud('history', updated);
-  } catch (e) {
-    console.error("Błąd podczas dodawania do historii:", e);
-  }
+  const history = getWorkoutHistory();
+  const updated = [entry, ...history];
+  localStorage.setItem(KEYS.HISTORY, JSON.stringify(updated));
+  syncToCloud('history', updated);
 };
 
 export const deleteHistoryItem = (id: string) => {
@@ -131,16 +143,18 @@ export const deleteHistoryItem = (id: string) => {
   syncToCloud('history', updated);
 };
 
-// --- KALKULATOR CELÓW (DIETA) ---
+export const clearHistory = () => {
+  localStorage.removeItem(KEYS.HISTORY);
+  syncToCloud('history', []);
+};
+
+// --- DIETA I KOMPATYBILNOŚĆ (Rozwiązuje błąd Dashboard.tsx) ---
 export const calculateDailyGoals = (profile: UserProfile) => {
   const { weight, height, age, gender, activityLevel, goal } = profile;
-  
   let bmr = (10 * weight) + (6.25 * height) - (5 * age);
   bmr = gender === 'male' ? bmr + 5 : bmr - 161;
-  
   const multipliers = [1.2, 1.375, 1.55, 1.725, 1.9];
   const tdee = bmr * multipliers[activityLevel - 1];
-  
   let kcal = tdee;
   if (goal === 'cut') kcal = tdee - 500;
   else if (goal === 'bulk') kcal = tdee + 300;
@@ -154,5 +168,6 @@ export const calculateDailyGoals = (profile: UserProfile) => {
   };
 };
 
-// Funkcja pusta dla kompatybilności
-export const addToShoppingList = () => {};
+export const addToShoppingList = (title?: string, ingredients?: any[]) => {
+  console.log("Funkcja listy zakupów wywołana (uproszczona):", title);
+};
