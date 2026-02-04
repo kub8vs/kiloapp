@@ -1,4 +1,5 @@
-// src/lib/user-store.ts
+import { db, auth } from './firebase';
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 export interface UserProfile {
   name: string;
@@ -27,9 +28,21 @@ export interface DailyStats {
 const KEYS = {
   PROFILE: 'kilo_user_profile',
   STATS: 'kilo_daily_stats',
-  SHOPPING: 'kilo_shopping_list',
   ROUTINES: 'kilo_routines',
   HISTORY: 'kilo_history'
+};
+
+// --- BEZPIECZNA SYNCHRONIZACJA Z FIREBASE ---
+const syncToCloud = async (key: string, data: any) => {
+  try {
+    const user = auth?.currentUser;
+    if (!user) return; 
+
+    const userRef = doc(db, "users", user.uid);
+    await setDoc(userRef, { [key]: data }, { merge: true });
+  } catch (e) {
+    console.warn("Firebase Sync skipped:", e);
+  }
 };
 
 // --- PROFIL ---
@@ -42,16 +55,18 @@ export const getUserProfile = (): UserProfile | null => {
 
 export const saveUserProfile = (profile: UserProfile): void => {
   localStorage.setItem(KEYS.PROFILE, JSON.stringify(profile));
-};
-
-export const clearUserProfile = () => {
-  localStorage.clear();
-  window.location.href = '/';
+  syncToCloud('profile', profile);
 };
 
 export const isOnboardingCompleted = (): boolean => {
   const profile = getUserProfile();
   return !!profile?.onboardingCompleted;
+};
+
+export const clearUserProfile = () => {
+  localStorage.clear();
+  if (auth) auth.signOut();
+  window.location.href = '/';
 };
 
 // --- STATYSTYKI ---
@@ -69,9 +84,10 @@ export const getTodayStats = (): DailyStats => {
 
 export const saveDailyStats = (stats: DailyStats): void => {
   localStorage.setItem(KEYS.STATS, JSON.stringify(stats));
+  syncToCloud('stats', stats);
 };
 
-// --- TRENINGI (Dla Workout.tsx) ---
+// --- TRENINGI I HISTORIA ---
 export const getWorkoutRoutines = () => {
   try {
     const data = localStorage.getItem(KEYS.ROUTINES);
@@ -82,21 +98,12 @@ export const getWorkoutRoutines = () => {
 export const saveRoutine = (routine: any) => {
   const current = getWorkoutRoutines();
   const exists = current.findIndex((r: any) => r.id === routine.id);
-  
-  let updated;
-  if (exists > -1) {
-    updated = [...current];
-    updated[exists] = routine;
-  } else {
-    updated = [...current, routine];
-  }
+  const updated = exists > -1 
+    ? current.map((r: any) => r.id === routine.id ? routine : r) 
+    : [...current, routine];
   
   localStorage.setItem(KEYS.ROUTINES, JSON.stringify(updated));
-};
-
-export const deleteRoutine = (id: string) => {
-  const current = getWorkoutRoutines();
-  localStorage.setItem(KEYS.ROUTINES, JSON.stringify(current.filter((r: any) => r.id !== id)));
+  syncToCloud('routines', updated);
 };
 
 export const getWorkoutHistory = () => {
@@ -107,63 +114,45 @@ export const getWorkoutHistory = () => {
 };
 
 export const addToHistory = (entry: any) => {
-  const history = getWorkoutHistory();
-  // Dodajemy na początek listy, aby najnowsze były u góry
-  localStorage.setItem(KEYS.HISTORY, JSON.stringify([entry, ...history]));
+  try {
+    const history = getWorkoutHistory();
+    const updated = [entry, ...history];
+    localStorage.setItem(KEYS.HISTORY, JSON.stringify(updated));
+    syncToCloud('history', updated);
+  } catch (e) {
+    console.error("Błąd podczas dodawania do historii:", e);
+  }
 };
 
 export const deleteHistoryItem = (id: string) => {
   const history = getWorkoutHistory();
-  localStorage.setItem(KEYS.HISTORY, JSON.stringify(history.filter((h: any) => h.id !== id)));
+  const updated = history.filter((h: any) => h.id !== id);
+  localStorage.setItem(KEYS.HISTORY, JSON.stringify(updated));
+  syncToCloud('history', updated);
 };
 
-export const clearHistory = () => localStorage.removeItem(KEYS.HISTORY);
-
-// --- DIETA (Dla Diet.tsx i Dashboard.tsx) ---
-export const addToShoppingList = (name: string, ingredients: string[]) => {
-  try {
-    const data = localStorage.getItem(KEYS.SHOPPING);
-    const list = data ? JSON.parse(data) : [];
-    list.push({ id: Date.now().toString(), name, ingredients });
-    localStorage.setItem(KEYS.SHOPPING, JSON.stringify(list));
-  } catch (e) {}
-};
-
-// --- KALKULATOR CELÓW ---
+// --- KALKULATOR CELÓW (DIETA) ---
 export const calculateDailyGoals = (profile: UserProfile) => {
   const { weight, height, age, gender, activityLevel, goal } = profile;
   
-  // BMR (Mifflin-St Jeor)
   let bmr = (10 * weight) + (6.25 * height) - (5 * age);
   bmr = gender === 'male' ? bmr + 5 : bmr - 161;
   
-  // Mnożniki aktywności
   const multipliers = [1.2, 1.375, 1.55, 1.725, 1.9];
   const tdee = bmr * multipliers[activityLevel - 1];
   
-  // Definiowanie kalorii na podstawie celu
   let kcal = tdee;
   if (goal === 'cut') kcal = tdee - 500;
   else if (goal === 'bulk') kcal = tdee + 300;
   
   return {
     calories: Math.round(kcal),
-    protein: Math.round(weight * 2), // Standard: 2g na kg
-    carbs: Math.round((kcal * 0.5) / 4), // 50% kcal z węgli
-    fat: Math.round((kcal * 0.25) / 9), // 25% kcal z tłuszczy
+    protein: Math.round(weight * 2),
+    carbs: Math.round((kcal * 0.5) / 4),
+    fat: Math.round((kcal * 0.25) / 9),
     steps: 10000
   };
 };
 
-export const updateExtendedProfile = (updates: any) => {
-  const current = getUserProfile();
-  if (current) {
-    const updated = { ...current, ...updates };
-    saveUserProfile(updated);
-    
-    // Jeśli aktualizujemy motyw, zaaplikuj go do dokumentu
-    if (updates.theme) {
-      document.documentElement.classList.toggle('dark', updates.theme === 'dark');
-    }
-  }
-};
+// Funkcja pusta dla kompatybilności
+export const addToShoppingList = () => {};

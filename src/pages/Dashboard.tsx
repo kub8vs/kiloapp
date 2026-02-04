@@ -3,14 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Footprints, ScanLine, Dumbbell, Bike, ChefHat, TrendingUp, 
-  Plus, X, Zap, Timer, MapPin, Flame, Clock, ShoppingCart,
+  X, Zap, Timer, MapPin, Flame, Clock,
   BrainCircuit, Send, MessageSquare, ChevronLeft 
 } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import ProgressRing from '@/components/ui/ProgressRing';
 import { 
   getUserProfile, getTodayStats, calculateDailyGoals, 
-  isOnboardingCompleted, addToShoppingList 
+  isOnboardingCompleted 
 } from '@/lib/user-store';
 import { askTrainer } from '@/lib/gemini';
 
@@ -50,7 +50,6 @@ const Dashboard = () => {
     }
   }, [navigate, showSplash]);
 
-  // Blokada scrollowania tła przy otwartym AI lub Przepisie
   useEffect(() => {
     if (selectedTrainer || selectedRecipe) {
       document.body.style.overflow = 'hidden';
@@ -124,7 +123,6 @@ const Dashboard = () => {
             </div>
           </header>
 
-          {/* DNI TYGODNIA */}
           <div className="flex justify-between">
             {weekDays.map((day, i) => {
               const today = new Date().getDay();
@@ -137,7 +135,6 @@ const Dashboard = () => {
             })}
           </div>
 
-          {/* STATYSTYKI KROKI - Naprawa NaN */}
           <div className="kilo-card bg-white/5 border border-white/10 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-foreground/10 flex items-center justify-center"><Footprints size={24} /></div>
@@ -157,7 +154,6 @@ const Dashboard = () => {
             </ProgressRing>
           </div>
 
-          {/* MAKRO - Naprawa NaN */}
           <div className="kilo-card bg-white/5 border border-white/10">
             <h3 className="font-black uppercase italic tracking-tighter mb-4 text-sm">Twoje Makro</h3>
             <div className="flex justify-around">
@@ -183,7 +179,6 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* SZYBKI DOSTĘP */}
           <div className="grid grid-cols-4 gap-3">
             {[ 
               { i: ScanLine, l: 'Skanuj', p: '/diet' }, 
@@ -198,7 +193,6 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* AI TRAINERS SECTION */}
           <section className="space-y-4">
             <h3 className="text-xs font-black uppercase text-zinc-500 tracking-widest px-1 flex items-center gap-2">
               <BrainCircuit size={14} /> AI Elite Trainers
@@ -222,7 +216,6 @@ const Dashboard = () => {
             </div>
           </section>
 
-          {/* PRZEPISY DLA CIEBIE */}
           <section>
             <h3 className="font-black uppercase italic tracking-tighter mb-4 text-sm">Wybrane dla Ciebie</h3>
             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
@@ -257,7 +250,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* MODAL PRZEPISU */}
         <AnimatePresence>
           {selectedRecipe && (
             <motion.div 
@@ -281,18 +273,7 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-black uppercase text-xs italic">Składniki</h3>
-                    <button 
-                      onClick={() => { 
-                        addToShoppingList(selectedRecipe.title, selectedRecipe.ingredients.map((i:any) => i.name)); 
-                        alert("Dodano do listy!"); 
-                      }} 
-                      className="flex items-center gap-2 bg-foreground text-background px-4 py-2 rounded-full text-[9px] font-black uppercase"
-                    >
-                      <ShoppingCart size={12} /> Kup składniki
-                    </button>
-                  </div>
+                  <h3 className="font-black uppercase text-xs italic">Składniki</h3>
                   {selectedRecipe.ingredients.map((ing: any, i: number) => (
                     <div key={i} className="flex justify-between p-4 bg-white/5 rounded-2xl text-xs font-bold">
                       <span>{ing.name}</span>
@@ -314,7 +295,6 @@ const Dashboard = () => {
           )}
         </AnimatePresence>
 
-        {/* MODAL CZATU AI */}
         <AnimatePresence>
           {selectedTrainer && (
             <motion.div 

@@ -1,23 +1,28 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as Store from "./user-store";
 
-const genAI = new GoogleGenerativeAI("AIzaSyA9uvyWOKyJnbgFXYk92cAitb4WRZTtor8");
+const API_KEY = "AIzaSyA9uvyWOKyJnbgFXYk92cAitb4WRZTtor8";
+const genAI = new GoogleGenerativeAI(API_KEY);
 
 export const askTrainer = async (trainerRole: string, userMessage: string) => {
   try {
     const profile = Store.getUserProfile();
-    
-    // ZMIANA: Zamiast "gemini-1.5-flash", używamy "gemini-pro"
-    // To model sugerowany w Twojej pomocy z konsoli
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Wymuszamy wersję v1, aby uniknąć błędu 404
+    const model = genAI.getGenerativeModel(
+      { model: "gemini-1.5-flash" },
+      { apiVersion: "v1" }
+    );
 
-    const systemPrompt = `Jesteś trenerem KILO ELITE. Specjalizacja: ${trainerRole}. Zawodnik: ${profile?.name}. Cel: ${profile?.goal}. Odpowiadaj krótko po polsku.`;
+    const systemPrompt = `Jesteś trenerem KILO ELITE. Specjalizacja: ${trainerRole}. Zawodnik: ${profile?.name || 'Mistrz'}. Cel: ${profile?.goal || 'Progres'}. Odpowiadaj krótko (max 3 zdania) po polsku.`;
 
-    const result = await model.generateContent(systemPrompt + "\nPytanie: " + userMessage);
+    const result = await model.generateContent({
+      contents: [{ role: "user", parts: [{ text: systemPrompt + "\n\nPytanie: " + userMessage }] }],
+    });
+
     const response = await result.response;
     return response.text();
-  } catch (error) {
-    console.error("Błąd Gemini:", error);
-    return "Trener ma teraz przerwę techniczną. Spróbuj za chwilę!";
+  } catch (error: any) {
+    console.error("Błąd AI:", error);
+    return "Trener ma teraz przerwę. Spróbuj za chwilę!";
   }
 };
