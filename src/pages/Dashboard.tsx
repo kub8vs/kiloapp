@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Footprints, ScanLine, Dumbbell, Bike, ChefHat, TrendingUp, 
   X, Zap, Timer, MapPin, Flame, Clock,
-  BrainCircuit, Send, MessageSquare, ChevronLeft 
+  BrainCircuit, Send, MessageSquare, ChevronLeft, ArrowRight
 } from 'lucide-react';
 
 // --- DODANE IMPORTY FIREBASE ---
@@ -35,6 +35,10 @@ const Dashboard = () => {
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
   const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('kiloapp_splash_played'));
 
+  // --- STANY TUTORIALA ---
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+
   // --- STANY AI ---
   const [selectedTrainer, setSelectedTrainer] = useState<any>(null);
   const [message, setMessage] = useState('');
@@ -59,19 +63,25 @@ const Dashboard = () => {
       const timer = setTimeout(() => {
         setShowSplash(false);
         sessionStorage.setItem('kiloapp_splash_played', 'true');
+        
+        // Uruchom tutorial jeśli nowy użytkownik
+        const hasSeenTutorial = localStorage.getItem('kiloapp_tutorial_dashboard_seen');
+        if (!hasSeenTutorial) {
+          setShowTutorial(true);
+        }
       }, 2000);
       return () => clearTimeout(timer);
     }
   }, [navigate, showSplash]);
 
   useEffect(() => {
-    if (selectedTrainer || selectedRecipe) {
+    if (selectedTrainer || selectedRecipe || showTutorial) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
     }
     return () => { document.body.style.overflow = 'auto'; };
-  }, [selectedTrainer, selectedRecipe]);
+  }, [selectedTrainer, selectedRecipe, showTutorial]);
 
   const goals = useMemo(() => profile ? calculateDailyGoals(profile) : null, [profile]);
 
@@ -89,6 +99,53 @@ const Dashboard = () => {
       steps: ["🍚 Ugotuj ryż.", "🍗 Podsmaż kurczaka w przyprawach.", "🥦 Ugotuj brokuły i wymieszaj w misce."]
     }
   ], []);
+
+  // --- KROKI TUTORIALA ---
+  const tutorialSteps = [
+    {
+      title: "Witaj w KiloApp!",
+      desc: "To Twoje centrum dowodzenia. Przygotowaliśmy szybki przegląd systemów.",
+      pos: "center"
+    },
+    {
+      title: "Aktywność Dzienna",
+      desc: "Monitoruj liczbę kroków i stopień realizacji dziennego celu ruchu.",
+      pos: "top"
+    },
+    {
+      title: "Bilans Makro",
+      desc: "Tu sprawdzisz spożyte białko, węgle i tłuszcze. Każdy gram ma znaczenie!",
+      pos: "top"
+    },
+    {
+      title: "Szybki Start",
+      desc: "Uruchom skanowanie diety, trening siłowy lub sprawdź nowe przepisy.",
+      pos: "top"
+    },
+    {
+      title: "Wsparcie AI Elite",
+      desc: "Masz pytanie? Nasi trenerzy AI Kamil, Marta i Seba odpowiedzą natychmiast.",
+      pos: "bottom"
+    },
+    {
+      title: "Twoje Postępy",
+      desc: "W tym miejscu zobaczysz wykresy swojej rosnącej siły po każdym treningu.",
+      pos: "bottom"
+    }
+  ];
+
+  const handleNextTutorial = () => {
+    if (currentStep < tutorialSteps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      finishTutorial();
+    }
+  };
+
+  const finishTutorial = () => {
+    setShowTutorial(false);
+    localStorage.setItem('kiloapp_tutorial_dashboard_seen', 'true');
+  };
 
   const handleSendAI = async () => {
     if (!message.trim() || isTyping) return;
@@ -127,8 +184,54 @@ const Dashboard = () => {
       )}</AnimatePresence>
 
       <AppLayout>
+        {/* --- TUTORIAL OVERLAY --- */}
+        <AnimatePresence>
+          {showTutorial && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6"
+            >
+              <motion.div 
+                key={currentStep}
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                className="bg-zinc-900 border border-blue-600/50 p-8 rounded-[2.5rem] w-full max-w-sm relative shadow-[0_0_50px_rgba(37,99,235,0.15)]"
+              >
+                {/* Arrow */}
+                <div className={`absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-zinc-900 border-l border-t border-blue-600/50 rotate-45 ${tutorialSteps[currentStep].pos === 'top' ? '-bottom-3' : '-top-3'}`} />
+                
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-black italic">
+                      {currentStep + 1}
+                    </div>
+                    <h4 className="text-xl font-black uppercase italic tracking-tighter">
+                      {tutorialSteps[currentStep].title}
+                    </h4>
+                  </div>
+                  <p className="text-sm font-bold text-zinc-400 uppercase italic leading-relaxed">
+                    {tutorialSteps[currentStep].desc}
+                  </p>
+                  <div className="flex justify-between items-center pt-6">
+                    <button onClick={finishTutorial} className="text-[10px] font-black uppercase text-zinc-600 tracking-widest">Pomiń</button>
+                    <button 
+                      onClick={handleNextTutorial}
+                      className="px-6 py-3 bg-blue-600 rounded-2xl text-white font-black uppercase italic text-xs flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-blue-600/30"
+                    >
+                      {currentStep === tutorialSteps.length - 1 ? "Start" : "Dalej"}
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <div className="px-5 pt-12 pb-24 space-y-6">
-          <header className="flex justify-between items-start">
+          <header className={`flex justify-between items-start transition-all ${showTutorial && currentStep === 0 ? 'relative z-[1001] bg-black p-4 rounded-3xl' : ''}`}>
             <div>
               <p className="text-muted-foreground text-sm uppercase font-bold">
                 {selectedDate.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric' })}
@@ -149,7 +252,7 @@ const Dashboard = () => {
             })}
           </div>
 
-          <div className="kilo-card bg-white/5 border border-white/10 flex items-center justify-between">
+          <div className={`kilo-card bg-white/5 border border-white/10 flex items-center justify-between transition-all ${showTutorial && currentStep === 1 ? 'relative z-[1001] bg-zinc-900 ring-2 ring-blue-600' : ''}`}>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-foreground/10 flex items-center justify-center"><Footprints size={24} /></div>
               <div>
@@ -168,7 +271,7 @@ const Dashboard = () => {
             </ProgressRing>
           </div>
 
-          <div className="kilo-card bg-white/5 border border-white/10">
+          <div className={`kilo-card bg-white/5 border border-white/10 transition-all ${showTutorial && currentStep === 2 ? 'relative z-[1001] bg-zinc-900 ring-2 ring-blue-600' : ''}`}>
             <h3 className="font-black uppercase italic tracking-tighter mb-4 text-sm">Twoje Makro</h3>
             <div className="flex justify-around">
               {[
@@ -193,7 +296,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-3">
+          <div className={`grid grid-cols-4 gap-3 transition-all ${showTutorial && currentStep === 3 ? 'relative z-[1001] bg-zinc-900 p-2 rounded-3xl ring-2 ring-blue-600' : ''}`}>
             {[ 
               { i: ScanLine, l: 'Skanuj', p: '/diet' }, 
               { i: Dumbbell, l: 'Trening', p: '/workout' }, 
@@ -207,7 +310,7 @@ const Dashboard = () => {
             ))}
           </div>
 
-          <section className="space-y-4">
+          <section className={`space-y-4 transition-all ${showTutorial && currentStep === 4 ? 'relative z-[1001] bg-zinc-900 p-4 rounded-[2.5rem] ring-2 ring-blue-600' : ''}`}>
             <h3 className="text-xs font-black uppercase text-zinc-500 tracking-widest px-1 flex items-center gap-2">
               <BrainCircuit size={14} /> AI Elite Trainers
             </h3>
@@ -251,7 +354,7 @@ const Dashboard = () => {
             </div>
           </section>
 
-          <div className="kilo-card bg-black/20 border border-white/5">
+          <div className={`kilo-card bg-black/20 border border-white/5 transition-all ${showTutorial && currentStep === 5 ? 'relative z-[1001] bg-zinc-900 ring-2 ring-blue-600' : ''}`}>
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp size={18} className="text-primary" />
               <h3 className="font-black uppercase italic text-sm">Progres Siłowy</h3>
@@ -263,6 +366,8 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+
+        {/* ... MODALE RECIPE & TRAINER POZOSTAJĄ BEZ ZMIAN ... */}
 
         <AnimatePresence>
           {selectedRecipe && (

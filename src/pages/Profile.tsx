@@ -4,8 +4,8 @@ import {
   User, LogOut, Shield, ChevronLeft, 
   Scale, Ruler, Target, Activity, Trash2, Settings,
   Zap, UserCircle, Watch, ChevronRight, Smartphone, 
-  Bluetooth, BarChart3, FileText, TrendingUp, Heart,
-  Brain, Dna, ShieldCheck, Loader2, Info, Activity as ActivityIcon, Printer
+  Bluetooth, BarChart3, TrendingUp, Heart,
+  Brain, Dna, ShieldCheck, Loader2, Info, Activity as ActivityIcon
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import * as Store from "@/lib/user-store";
@@ -25,6 +25,7 @@ const Profile = () => {
       navigate('/onboarding');
     } else {
       setProfile(data);
+      // Symulacja ładowania systemów biometrycznych
       const timer = setTimeout(() => setLoading(false), 800);
       return () => clearTimeout(timer);
     }
@@ -62,18 +63,17 @@ const Profile = () => {
   };
 
   const handleLogout = () => navigate('/onboarding');
-  const handlePrint = () => window.print();
 
   const activityLabels: any = { 1: "Siedzący", 2: "Lekka", 3: "Umiarkowana", 4: "Wysoka", 5: "Ekstremalna" };
   const goalLabels: any = { cut: "Redukcja", bulk: "Masa", recomp: "Recomp" };
 
   // --- KOMPONENTY WYKRESÓW (Custom SVG/Tailwind) ---
-  const StrengthChart = ({ isPrint = false }) => (
-    <div className={`${isPrint ? 'h-48' : 'h-32'} w-full flex items-end justify-between gap-1.5 px-2`}>
+  const StrengthChart = () => (
+    <div className="h-32 w-full flex items-end justify-between gap-1.5 px-2">
       {[35, 45, 40, 65, 85, 75, 95].map((h, i) => (
         <div key={i} className="flex-1 flex flex-col items-center gap-2">
           <div 
-            className={`w-full ${isPrint ? 'bg-blue-600' : 'bg-gradient-to-t from-blue-700 to-blue-400 shadow-[0_0_10px_rgba(37,99,235,0.3)]'} rounded-t-md transition-all duration-1000`} 
+            className="w-full bg-gradient-to-t from-blue-700 to-blue-400 rounded-t-md shadow-[0_0_10px_rgba(37,99,235,0.3)] transition-all duration-1000" 
             style={{ height: `${h}%` }} 
           />
         </div>
@@ -81,29 +81,29 @@ const Profile = () => {
     </div>
   );
 
-  const HeartRateChart = ({ isPrint = false }) => (
-    <div className={`${isPrint ? 'h-48' : 'h-32'} w-full relative flex items-center px-2`}>
+  const HeartRateChart = () => (
+    <div className="h-32 w-full relative flex items-center px-2">
       <svg className="w-full h-full overflow-visible">
         <path 
           d="M0 60 L40 55 L80 65 L120 40 L160 30 L200 45 L240 20 L300 15" 
           fill="none" 
-          stroke={isPrint ? "#000" : "#10b981"} 
+          stroke="#10b981" 
           strokeWidth="3" 
           strokeLinecap="round"
-          className={!isPrint ? "animate-draw" : ""}
+          className="animate-draw"
         />
-        <circle cx="240" cy="20" r="4" fill={isPrint ? "#000" : "#10b981"} className={!isPrint ? "animate-pulse" : ""} />
+        <circle cx="240" cy="20" r="4" fill="#10b981" className="animate-pulse" />
       </svg>
     </div>
   );
 
-  const WeightChart = ({ isPrint = false }) => (
-    <div className={`${isPrint ? 'h-48' : 'h-32'} w-full flex items-end justify-between gap-3 px-4`}>
+  const WeightChart = () => (
+    <div className="h-32 w-full flex items-end justify-between gap-3 px-4">
       {[90, 88, 87, 86, 84.5, 83.8, 83].map((v, i) => (
         <div key={i} className="flex-1 flex flex-col items-center gap-2">
-          {!isPrint && <div className="w-2 h-2 rounded-full bg-zinc-400 mb-1" />}
+          <div className="w-2 h-2 rounded-full bg-zinc-400 mb-1" />
           <div 
-            className={`w-full ${isPrint ? 'bg-zinc-200 border border-zinc-400' : 'bg-zinc-800 border-x border-t border-white/5'} rounded-t-xl`} 
+            className="w-full bg-zinc-800 rounded-t-xl border-x border-t border-white/5" 
             style={{ height: `${(v/90)*100}%` }} 
           />
         </div>
@@ -113,18 +113,7 @@ const Profile = () => {
 
   return (
     <AppLayout>
-      <style>{`
-        @media print {
-          .no-print { display: none !important; }
-          .print-only { display: block !important; }
-          body { background: white !important; color: black !important; padding: 0 !important; }
-          @page { margin: 1.5cm; }
-          .report-card { border: 1px solid #e5e7eb; page-break-inside: avoid; }
-        }
-        .print-only { display: none; }
-      `}</style>
-
-      <div className="dark px-5 pt-12 pb-32 min-h-screen bg-black text-white no-print">
+      <div className="dark px-5 pt-12 pb-32 min-h-screen bg-black text-white">
         
         {/* HEADER */}
         <header className="mb-10 flex justify-between items-start">
@@ -173,7 +162,7 @@ const Profile = () => {
             </DrawerTrigger>
             
             <DrawerContent className="bg-zinc-950 border-t-zinc-800 text-white h-[95vh]">
-              <div className="mx-auto w-full max-md flex flex-col h-full overflow-hidden">
+              <div className="mx-auto w-full max-w-md flex flex-col h-full overflow-hidden">
                 <DrawerHeader className="border-b border-white/5 pb-4">
                   <DrawerTitle className="text-3xl font-black uppercase italic text-center tracking-tighter">Bio-Intelligence</DrawerTitle>
                   <DrawerDescription className="text-center text-zinc-500 font-bold uppercase text-[9px] tracking-[0.4em]">Integrated Performance Analytics</DrawerDescription>
@@ -181,30 +170,56 @@ const Profile = () => {
                 
                 <div className="flex-1 overflow-y-auto px-6 py-6 space-y-12 pb-20 custom-scrollbar">
                   
-                  {/* VISUALS FOR DRAWER */}
+                  {/* 1. SIŁA */}
                   <div className="space-y-4">
-                    <div className="flex justify-between items-end"><h4 className="text-xs font-black uppercase italic tracking-widest">Postępy Siłowe</h4></div>
-                    <div className="p-5 bg-zinc-900 rounded-[2rem] border border-white/5"><StrengthChart /></div>
+                    <div className="flex justify-between items-end">
+                      <div className="flex items-center gap-2">
+                        <TrendingUp className="text-blue-500" size={18} />
+                        <h4 className="text-xs font-black uppercase italic tracking-widest">Postępy Siłowe</h4>
+                      </div>
+                      <span className="text-[10px] font-black text-blue-500 bg-blue-500/10 px-2 py-1 rounded-md">+14.2%</span>
+                    </div>
+                    <div className="p-5 bg-zinc-900 rounded-[2rem] border border-white/5">
+                      <StrengthChart />
+                    </div>
+                    <p className="text-[10px] text-zinc-500 leading-relaxed font-bold uppercase">
+                      <ShieldCheck className="inline mr-1 text-blue-500" size={12} /> Wzrost objętości treningowej sugeruje optymalną adaptację CNS.
+                    </p>
                   </div>
 
+                  {/* 2. TĘTNO */}
                   <div className="space-y-4">
-                    <div className="flex justify-between items-end"><h4 className="text-xs font-black uppercase italic tracking-widest">Tętno Spoczynkowe</h4></div>
-                    <div className="p-5 bg-zinc-900 rounded-[2rem] border border-white/5"><HeartRateChart /></div>
+                    <div className="flex justify-between items-end">
+                      <div className="flex items-center gap-2">
+                        <Heart className="text-emerald-500" size={18} />
+                        <h4 className="text-xs font-black uppercase italic tracking-widest">Tętno Spoczynkowe</h4>
+                      </div>
+                      <span className="text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-md">-4 BPM</span>
+                    </div>
+                    <div className="p-5 bg-zinc-900 rounded-[2rem] border border-white/5">
+                      <HeartRateChart />
+                    </div>
+                    <p className="text-[10px] text-zinc-500 leading-relaxed font-bold uppercase">
+                      <Info className="inline mr-1 text-emerald-500" size={12} /> Stabilizacja tętna wskazuje na wysoką gotowość metaboliczną.
+                    </p>
                   </div>
 
+                  {/* 3. MASA CIAŁA */}
                   <div className="space-y-4">
-                    <div className="flex justify-between items-end"><h4 className="text-xs font-black uppercase italic tracking-widest">Masa Ciała (Kg)</h4></div>
-                    <div className="p-5 bg-zinc-900 rounded-[2rem] border border-white/5"><WeightChart /></div>
+                    <div className="flex justify-between items-end">
+                      <div className="flex items-center gap-2">
+                        <Scale className="text-zinc-100" size={18} />
+                        <h4 className="text-xs font-black uppercase italic tracking-widest">Masa Ciała (Kg)</h4>
+                      </div>
+                      <span className="text-[10px] font-black text-zinc-100 bg-white/10 px-2 py-1 rounded-md">TREND ↓</span>
+                    </div>
+                    <div className="p-5 bg-zinc-900 rounded-[2rem] border border-white/5">
+                      <WeightChart />
+                    </div>
+                    <p className="text-[10px] text-zinc-500 leading-relaxed font-bold uppercase text-center">
+                      Analiza składu ciała sugeruje efektywną rekompozycję.
+                    </p>
                   </div>
-
-                  {/* PDF BUTTON */}
-                  <button 
-                    onClick={handlePrint}
-                    className="w-full py-8 bg-white text-black rounded-[2.5rem] flex items-center justify-center gap-3 active:scale-95 transition-all shadow-xl shadow-white/5"
-                  >
-                    <Printer size={20} strokeWidth={3} />
-                    <span className="font-black uppercase italic tracking-widest">Generuj Raport PDF</span>
-                  </button>
 
                 </div>
                 <DrawerClose asChild>
@@ -300,83 +315,6 @@ const Profile = () => {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
-
-      {/* --- PROFESSIONAL PRINT TEMPLATE (PDF ONLY) --- */}
-      <div className="print-only bg-white text-black p-10 min-h-screen">
-        {/* HEADER */}
-        <div className="flex justify-between items-center border-b-8 border-black pb-10 mb-12">
-          <div>
-            <h1 className="text-7xl font-black italic tracking-tighter leading-none">KILO</h1>
-            <p className="text-xs font-black uppercase tracking-[0.4em] text-blue-600 mt-2">Elite Performance Intelligence</p>
-          </div>
-          <div className="text-right">
-            <p className="text-xl font-black uppercase">{profile.name}</p>
-            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Raport Wygenerowany: {new Date().toLocaleDateString()}</p>
-          </div>
-        </div>
-
-        {/* SECTION 1: STRENGTH */}
-        <div className="report-card p-10 rounded-[3rem] mb-10">
-          <div className="flex justify-between items-end mb-8">
-            <h2 className="text-2xl font-black uppercase italic">01. Analiza Progresji Siłowej</h2>
-            <span className="text-[10px] font-black bg-blue-600 text-white px-3 py-1 rounded-full uppercase">Status: Optimal</span>
-          </div>
-          <StrengthChart isPrint />
-          <div className="mt-10 grid grid-cols-2 gap-12 border-t border-zinc-100 pt-8">
-            <div className="space-y-3">
-              <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Interpretacja Danych</p>
-              <p className="text-sm leading-relaxed font-medium italic text-zinc-800">System wykrył systematyczny wzrost objętości treningowej (Total Volume). Krzywa progresji wskazuje na skuteczną rekrutację jednostek motorycznych wysokoprogowych.</p>
-            </div>
-            <div className="bg-zinc-50 p-6 rounded-[2rem] border-l-4 border-blue-600">
-              <p className="text-[10px] font-black uppercase text-blue-600 mb-2">Elite Pro-Tip</p>
-              <p className="text-xs font-bold leading-relaxed uppercase italic">Zastosuj periodyzację falową w kolejnym mikrocyklu. Zmniejszenie objętości o 20% przy zachowaniu intensywności pozwoli na pełną superkompensację tkanki łącznej.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION 2: HEART RATE */}
-        <div className="report-card p-10 rounded-[3rem] mb-10">
-          <div className="flex justify-between items-end mb-8">
-            <h2 className="text-2xl font-black uppercase italic">02. Wydolność i Regeneracja CNS</h2>
-            <span className="text-[10px] font-black bg-black text-white px-3 py-1 rounded-full uppercase">Biometric: Verified</span>
-          </div>
-          <HeartRateChart isPrint />
-          <div className="mt-10 grid grid-cols-2 gap-12 border-t border-zinc-100 pt-8">
-            <div className="space-y-3">
-              <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Wskaźnik Homeostazy</p>
-              <p className="text-sm leading-relaxed font-medium italic text-zinc-800">Stabilizacja tętna spoczynkowego na niskim poziomie świadczy o wysokiej adaptacji układu przywspółczulnego i optymalnej regeneracji pomiędzy sesjami.</p>
-            </div>
-            <div className="bg-zinc-50 p-6 rounded-[2rem] border-l-4 border-zinc-900">
-              <p className="text-[10px] font-black uppercase text-zinc-900 mb-2">Elite Pro-Tip</p>
-              <p className="text-xs font-bold leading-relaxed uppercase italic">Wprowadź protokół 10 min medytacji Box Breathing (4s wdech / 4s stop / 4s wydech) bezpośrednio po sesji siłowej, aby szybciej obniżyć poziom kortyzolu.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION 3: WEIGHT */}
-        <div className="report-card p-10 rounded-[3rem] mb-10">
-          <div className="flex justify-between items-end mb-8">
-            <h2 className="text-2xl font-black uppercase italic">03. Kontrola Kompozycji Ciała</h2>
-            <span className="text-[10px] font-black border-2 border-black px-3 py-1 rounded-full uppercase text-sm">Cel: {goalLabels[profile.goal]}</span>
-          </div>
-          <WeightChart isPrint />
-          <div className="mt-10 grid grid-cols-2 gap-12 border-t border-zinc-100 pt-8">
-            <div className="space-y-3">
-              <p className="text-[10px] font-black uppercase text-zinc-400 tracking-widest">Analiza Trendu</p>
-              <p className="text-sm leading-relaxed font-medium italic text-zinc-800">Spadek masy przy jednoczesnym wzroście siły (Sekcja 01) potwierdza efektywną rekompozycję składu ciała i utratę zbędnej tkanki tłuszczowej.</p>
-            </div>
-            <div className="bg-zinc-50 p-6 rounded-[2rem] border-l-4 border-zinc-400">
-              <p className="text-[10px] font-black uppercase text-zinc-500 mb-2">Elite Pro-Tip</p>
-              <p className="text-xs font-bold leading-relaxed uppercase italic">Zwiększ podaż leucyny w posiłku po-treningowym do 3g. Wspomoże to syntezę białek mięśniowych w fazie deficytu kalorycznego.</p>
-            </div>
-          </div>
-        </div>
-
-        {/* FOOTER */}
-        <div className="mt-20 text-center">
-          <p className="text-[8px] font-black uppercase tracking-[0.6em] text-zinc-300 italic">Generated by KILO Intelligence System v4.0.1 • Biometric Authenticated Document</p>
-        </div>
       </div>
     </AppLayout>
   );
