@@ -162,9 +162,9 @@ przypominających literę „K” / grot skierowany w górę / skrzyżowane szta
 **ruch w górę (progres)** i **scalanie wielu rzeczy w jedno** (dwa elementy splecione w znak).
 
 ### Wariant podstawowy
-- Znak w **niebieskim gradiencie** (jasny błękit → nasycony błękit) na **białym tle**
-  (ikona launchera) — wariant „store / ikona aplikacji”.
-- W interfejsie aplikacji znak/akcent występuje jako **biały** lub **błękitny** na czerni.
+- Znak **monochromatyczny**: biały na czarnym tle (motyw ciemny) lub czarny na białym
+  (motyw jasny). Ikona launchera docelowo również w czerni/bieli.
+- Zero koloru — znak żyje wyłącznie w skali szarości.
 
 ### Logo zastępcze w UI
 W aplikacji jako sygnet używana bywa ikona **`Zap` (błyskawica)** oraz **`Dumbbell`
@@ -182,7 +182,7 @@ tekstu ani innych elementów w tej strefie.
 ### Czego NIE robić ze znakiem
 - ❌ Nie obracać (poza celowym `-rotate-6` w sygnecie powitalnym).
 - ❌ Nie zmieniać proporcji ani nie rozciągać.
-- ❌ Nie stosować innych kolorów niż: biały, czerń, błękit `#2563EB` lub firmowy gradient.
+- ❌ Nie stosować koloru — znak wyłącznie biały (na ciemnym) lub czarny (na jasnym).
 - ❌ Nie dodawać cieni/obrysów spoza systemu (dozwolona tylko firmowa poświata).
 - ❌ Nie umieszczać niebieskiego znaku na niebieskim tle (brak kontrastu).
 
@@ -190,10 +190,26 @@ tekstu ani innych elementów w tej strefie.
 
 ## 6. Kolory
 
-KILO opiera się na zasadzie **„Modern Noir + jeden elektryczny akcent”**:
-monochromatyczny fundament (czerń/biel/szarości) i **elektryczny błękit** jako jedyny
-kolor-bohater. Pozostałe kolory są **wyłącznie funkcjonalne** (sukces, ostrzeżenie, błąd,
-makroskładniki).
+> **ZASADA NADRZĘDNA: KILO jest CZYSTO MONOCHROMATYCZNE — wyłącznie czerń, biel i
+> szarości. ZERO innych kolorów** (bez błękitu, zieleni, pomarańczu, czerwieni).
+> Motyw **jasny**: czarne elementy na białym tle. Motyw **ciemny**: białe elementy na
+> czarnym tle. Akcent = kolor `foreground` (biel w dark / czerń w light). Makroskładniki
+> rozróżniamy **odcieniami szarości + etykietami (B/W/T)**, nie kolorem.
+> Tabele „Elite Blue” i „kolory funkcjonalne” poniżej są **ARCHIWALNE** (zastąpione tą zasadą).
+
+### 6.0 Paleta monochromatyczna (obowiązująca)
+| Rola | Token CSS | Ciemny | Jasny |
+|---|---|---|---|
+| Tło | `--background` | `#000000` | `#FFFFFF` |
+| Treść / akcent | `--foreground` | `#FFFFFF` | `#171717` |
+| Karta | `--card` | `~#1A1A1A` | `~#F7F7F7` |
+| Powierzchnia podniesiona | `--secondary` | `#262626` | `#EDEDED` |
+| Tekst drugorzędny | `--muted-foreground` | `~#999999` | `~#666666` |
+| Obramowanie | `--border` | `#333333` | `#E0E0E0` |
+| Makro B / W / T | `--kilo-protein/carbs/fat` | biel → 72% → 48% | czerń → 42% → 62% |
+
+> Mechanizm: wszystkie powierzchnie używają tokenów semantycznych; zmiana motywu odwraca
+> czerń↔biel. Zasada projektowa: **maks. kontrast, zero dekoracyjnego koloru.**
 
 ### 6.1 Kolory bazowe — „Modern Noir”
 | Token | HEX | HSL | Zastosowanie |

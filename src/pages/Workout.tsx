@@ -242,7 +242,7 @@ const Workout = () => {
                 src={`https://maps.google.com/maps?q=${coords.lat},${coords.lng}&t=k&z=17&output=embed`} 
               />
               <div className="absolute top-6 left-6 bg-background/80 px-4 py-2 rounded-full border border-foreground/10 flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-foreground animate-pulse" />
                 <span className="text-[9px] font-black uppercase">GPS LIVE</span>
               </div>
             </div>
@@ -280,7 +280,7 @@ const Workout = () => {
                   setIsCardioTracking(true);
                 }
               }}
-              className={`w-full py-7 rounded-[2.5rem] font-black uppercase text-lg ${isCardioTracking ? 'bg-red-600' : 'bg-foreground text-background'}`}
+              className={`w-full py-7 rounded-[2.5rem] font-black uppercase text-lg ${isCardioTracking ? 'border-2 border-foreground text-foreground' : 'bg-foreground text-background'}`}
             >
               {isCardioTracking ? 'STOP' : 'START CARDIO'}
             </button>
@@ -350,7 +350,7 @@ const Workout = () => {
             </div>
             {history.slice().reverse().map(h => (
               <div key={h.id} onClick={() => setSelectedHistoryItem(h)} className="bg-card border border-border p-5 rounded-3xl flex items-center gap-4 cursor-pointer group">
-                <div className="w-12 h-12 rounded-2xl bg-background border border-border flex items-center justify-center text-emerald-500">
+                <div className="w-12 h-12 rounded-2xl bg-background border border-border flex items-center justify-center text-foreground">
                   {h.type === 'cardio' ? <Navigation size={22} /> : <Dumbbell size={22} />}
                 </div>
                 <div className="flex-1">
@@ -358,7 +358,7 @@ const Workout = () => {
                   <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">{h.date} • {h.duration}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs font-black text-emerald-500">{h.details}</p>
+                  <p className="text-xs font-black text-foreground">{h.details}</p>
                 </div>
               </div>
             ))}
@@ -372,7 +372,7 @@ const Workout = () => {
               <header className="flex justify-between items-center mb-10">
                 <button onClick={() => setSelectedHistoryItem(null)}><ChevronLeft size={30} /></button>
                 <h2 className="font-black uppercase italic tracking-tighter text-xs">Raport Sesji</h2>
-                <button onClick={() => { if(confirm("Usunąć ten rekord?")) { deleteHistoryItem(selectedHistoryItem.id); setHistory(getWorkoutHistory()); setSelectedHistoryItem(null); } }} className="text-red-500"><Trash2 size={20}/></button>
+                <button onClick={() => { if(confirm("Usunąć ten rekord?")) { deleteHistoryItem(selectedHistoryItem.id); setHistory(getWorkoutHistory()); setSelectedHistoryItem(null); } }} className="text-muted-foreground"><Trash2 size={20}/></button>
               </header>
 
               <div className="space-y-8">
@@ -399,7 +399,7 @@ const Workout = () => {
                   </div>
                   <div className="bg-card/50 p-6 rounded-[2rem] border border-border">
                     <p className="text-[9px] font-black text-muted-foreground uppercase mb-1">Spalone Kalorie</p>
-                    <p className="text-2xl font-black italic tabular-nums text-orange-500">~{selectedHistoryItem.kcal || 0}kcal</p>
+                    <p className="text-2xl font-black italic tabular-nums text-muted-foreground">~{selectedHistoryItem.kcal || 0}kcal</p>
                   </div>
                 </div>
 
@@ -452,7 +452,7 @@ const Workout = () => {
                       <span>Seria</span><span>Poprz.</span><span>Kg</span><span>Powt.</span><span>✓</span>
                     </div>
                     {ex.sets.map((set, sIdx: number) => (
-                      <div key={sIdx} className={`grid grid-cols-5 items-center p-3 rounded-2xl ${set.completed ? 'bg-emerald-900/20' : 'bg-background/20'}`}>
+                      <div key={sIdx} className={`grid grid-cols-5 items-center p-3 rounded-2xl ${set.completed ? 'bg-foreground/10' : 'bg-background/20'}`}>
                         <span className="text-[10px] font-black text-muted-foreground text-center">{sIdx+1}</span>
                         <span className="text-[9px] text-muted-foreground italic text-center">—</span>
                         <input 
@@ -478,7 +478,7 @@ const Workout = () => {
                             if(cp.exercises[exIdx].sets[sIdx].completed) { setRestTimer(90); setShowRestOverlay(true); }
                             setActiveWorkout(cp);
                           }} 
-                          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${set.completed ? 'bg-emerald-500 text-background' : 'bg-secondary text-muted-foreground'}`}
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${set.completed ? 'bg-foreground text-background' : 'bg-secondary text-muted-foreground'}`}
                         >
                           <Check size={18} strokeWidth={4} />
                         </button>

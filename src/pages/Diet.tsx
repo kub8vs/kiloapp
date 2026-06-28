@@ -252,7 +252,7 @@ const Diet = () => {
                     Cel {userProfile.kcal}{burned > 0 && <span className="text-macro-carbs"> + {burned} spalone</span>} − {dayTotals.kcal} zjedzone
                   </p>
                 </div>
-                <Zap className="text-yellow-500" size={30} fill="currentColor" />
+                <Zap className="text-foreground" size={30} fill="currentColor" />
               </div>
               <div className="grid grid-cols-3 gap-4">
                  {[{l: "Białko", v: dayTotals.p, t: userProfile.p, bg: "bg-macro-protein"}, {l: "Węgle", v: dayTotals.c, t: userProfile.c, bg: "bg-macro-carbs"}, {l: "Tłuszcze", v: dayTotals.f, t: userProfile.f, bg: "bg-macro-fat"}].map(m => (
@@ -341,7 +341,7 @@ const Diet = () => {
                 )}
               </div>
               {shoppingList.length > 0 && (
-                <button onClick={() => setShoppingList([])} className="w-full py-6 bg-red-600 text-foreground rounded-[2rem] font-black uppercase text-[10px] tracking-widest mt-4">Wyczyść wszystko</button>
+                <button onClick={() => setShoppingList([])} className="w-full py-6 bg-foreground text-background rounded-[2rem] font-black uppercase text-[10px] tracking-widest mt-4">Wyczyść wszystko</button>
               )}
             </motion.div>
           )}

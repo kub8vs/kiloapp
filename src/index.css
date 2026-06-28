@@ -37,14 +37,14 @@
 
     --radius: 1.5rem;
 
-    /* Akcenty marki — identyczne w obu motywach */
-    --kilo-blue: 221 83% 53%;
-    --kilo-protein: 221 83% 53%;
-    --kilo-carbs: 160 84% 39%;
-    --kilo-fat: 25 95% 53%;
-    --kilo-success: 142 76% 36%;
-    --kilo-warning: 38 92% 50%;
-    --kilo-error: 0 84% 60%;
+    /* Monochrome — JASNY: akcent = czerń, makra w skali szarości */
+    --kilo-blue: 0 0% 9%;
+    --kilo-protein: 0 0% 9%;
+    --kilo-carbs: 0 0% 42%;
+    --kilo-fat: 0 0% 62%;
+    --kilo-success: 0 0% 9%;
+    --kilo-warning: 0 0% 35%;
+    --kilo-error: 0 0% 9%;
     --glass-blur: 20px;
 
     --sidebar-background: 0 0% 98%;
@@ -86,6 +86,15 @@
     --border: 0 0% 20%;
     --input: 0 0% 15%;
     --ring: 0 0% 80%;
+
+    /* Monochrome — CIEMNY: akcent = biel, makra w skali szarości */
+    --kilo-blue: 0 0% 100%;
+    --kilo-protein: 0 0% 100%;
+    --kilo-carbs: 0 0% 72%;
+    --kilo-fat: 0 0% 48%;
+    --kilo-success: 0 0% 100%;
+    --kilo-warning: 0 0% 70%;
+    --kilo-error: 0 0% 100%;
 
     --sidebar-background: 0 0% 5%;
     --sidebar-foreground: 0 0% 100%;

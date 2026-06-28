@@ -49,6 +49,10 @@ Cel: jeden spójny system wizualny zgodny z brandbookiem.
 - [x] 2.10 Działający tryb jasny/ciemny (next-themes, przełącznik w Profilu, dark-first)
 - [x] 2.11 Bilans energii: spalone na treningu kcal powiększają budżet dnia (MET/ACSM)
 - [x] 2.12 Sprawne, motywowane paski przewijania + brak blokad scrolla po modalach
+- [x] 2.13 **Czysta monochromia** — usunięto WSZYSTKIE kolory (tylko czerń/biel/szarości)
+- [x] 2.14 **Profil = centrum dowodzenia** — edycja wszystkich pól, motyw, powiadomienia,
+  uprawnienia (kamera/GPS), konto, o aplikacji; wszystkie przyciski działają
+- [x] 2.15 Interaktywny pasek tygodnia — wybór dnia przelicza makra/energię/kroki (logi per-data)
 
 ---
 

@@ -117,8 +117,8 @@ export const clearUserProfile = () => {
 };
 
 // --- DZIENNY LOG (posiłki + woda) — wspólne źródło dla Diet i Dashboard ---
-const emptyLog = (): DailyLog => ({
-  date: todayKey(),
+const emptyLog = (date: string = todayKey()): DailyLog => ({
+  date,
   meals: {
     breakfast: { name: 'Śniadanie', items: [] },
     lunch: { name: 'Obiad', items: [] },
@@ -128,31 +128,40 @@ const emptyLog = (): DailyLog => ({
   water: 0,
 });
 
-export const getDailyLog = (): DailyLog => {
+// Logi przechowywane jako mapa { [data]: DailyLog } → wybór dnia działa naprawdę.
+const readLogMap = (): Record<string, DailyLog> => {
   try {
     const data = localStorage.getItem(KEYS.LOG);
-    if (data) {
-      const log = JSON.parse(data) as DailyLog;
-      if (log.date === todayKey()) return log;
-    }
+    if (!data) return {};
+    const parsed = JSON.parse(data);
+    if (parsed && parsed.meals === undefined) return parsed as Record<string, DailyLog>;
+    if (parsed && parsed.date) return { [parsed.date]: parsed as DailyLog }; // migracja legacy
   } catch (e) {
-    /* brak lub uszkodzony zapis — użyj pustego logu */
+    /* brak/uszkodzony zapis */
   }
-  return emptyLog();
+  return {};
+};
+
+export const getDailyLog = (date: string = todayKey()): DailyLog => {
+  return readLogMap()[date] || emptyLog(date);
 };
 
 export const saveDailyLog = (log: DailyLog): void => {
-  localStorage.setItem(KEYS.LOG, JSON.stringify(log));
-  syncToCloud('dailyLog', log);
+  const map = readLogMap();
+  map[log.date] = log;
+  const keys = Object.keys(map).sort();
+  if (keys.length > 60) keys.slice(0, keys.length - 60).forEach((k) => delete map[k]); // limit 60 dni
+  localStorage.setItem(KEYS.LOG, JSON.stringify(map));
+  syncToCloud('dailyLog', map);
 };
 
 // --- KROKI (na razie ręczne/0; docelowo HealthKit / Google Fit) ---
-export const getSteps = (): number => {
+export const getSteps = (date: string = todayKey()): number => {
   try {
     const data = localStorage.getItem(KEYS.STEPS);
     if (data) {
       const s = JSON.parse(data);
-      if (s.date === todayKey()) return s.steps || 0;
+      if (s.date === date) return s.steps || 0;
     }
   } catch (e) {
     /* brak lub uszkodzony zapis — domyślnie 0 */
@@ -191,8 +200,8 @@ export const addWeightEntry = (weight: number): WeightEntry[] => {
 };
 
 // --- STATYSTYKI DNIA (liczone z logu, więc zawsze spójne z Dietą) ---
-export const getTodayStats = (): DailyStats => {
-  const log = getDailyLog();
+export const getTodayStats = (date: string = todayKey()): DailyStats => {
+  const log = getDailyLog(date);
   let calories = 0, protein = 0, carbs = 0, fat = 0;
   Object.values(log.meals).forEach((m) =>
     m.items.forEach((i) => {
@@ -204,7 +213,7 @@ export const getTodayStats = (): DailyStats => {
   );
   return {
     date: log.date,
-    steps: getSteps(),
+    steps: getSteps(date),
     calories: Math.round(calories),
     protein: Math.round(protein),
     carbs: Math.round(carbs),
@@ -246,10 +255,10 @@ export const getWorkoutHistory = (): HistoryEntry[] => {
 };
 
 // Suma kalorii spalonych dziś (z historii treningów) — do bilansu energii.
-export const getTodayBurned = (): number => {
-  const today = new Date().toLocaleDateString();
+export const getTodayBurned = (date: string = todayKey()): number => {
+  const locale = new Date(date + 'T00:00:00').toLocaleDateString();
   return getWorkoutHistory()
-    .filter((h) => h.date === today)
+    .filter((h) => h.date === locale)
     .reduce((sum, h) => sum + (h.kcal || 0), 0);
 };
 

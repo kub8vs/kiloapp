@@ -15,11 +15,11 @@ Język produktu: **polski**. Platformy: **iOS, Android, PWA**.
 ## Zasady marki (nienegocjowalne — szczegóły w BRANDBOOK.md)
 
 - **Dark-first.** Czarne tło (`#000000`) dominuje. Nie wprowadzać jasnego motywu jako głównego.
-- **Kolor system: „Modern Noir + Elite Blue”.** Monochromatyczny fundament + JEDEN
-  kolor-bohater: **Elite Blue `#2563EB`**. Reszta kolorów = wyłącznie funkcja:
-  zielony `#10B981` (sukces/cardio), pomarańczowy `#F97316` (spalanie/tłuszcz),
-  czerwony `#DC2626` (stop/błąd).
-- **Makro (standard docelowy):** Białko = niebieski, Węgle = zielony, Tłuszcze = pomarańczowy.
+- **Kolor system: CZYSTO MONOCHROMATYCZNY — tylko czerń, biel i szarości. ZERO innych
+  kolorów.** Jasny: czarne elementy na białym tle. Ciemny: białe na czarnym. Akcent =
+  `foreground`. Wszystkie powierzchnie przez tokeny semantyczne (`bg-background`,
+  `text-foreground`, `bg-card`, `border-foreground/10`...). Nigdy nie hardkodować kolorów.
+- **Makro (B/W/T):** rozróżniane wyłącznie odcieniami szarości + etykietą, nie kolorem.
 - **Typografia-sygnatura:** nagłówki = `font-black` + `UPPERCASE` + `italic` + `tracking-tighter`.
   Krój systemowy (`-apple-system…`).
 - **Kształt:** bardzo duże zaokrąglenia (squircle), bazowy `--radius: 1.5rem`, karty do `3rem`.

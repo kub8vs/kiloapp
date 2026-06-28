@@ -49,10 +49,12 @@ const Dashboard = () => {
   const [stats, setStats] = useState(() => getTodayStats());
   const [editingSteps, setEditingSteps] = useState(false);
   const [stepsInput, setStepsInput] = useState('');
-  const [burned] = useState(() => getTodayBurned());
+  const [burned, setBurned] = useState(() => getTodayBurned());
   const [history] = useState(() => getWorkoutHistory());
   const strengthVols = history.filter((h) => h.type !== 'cardio').slice(-8).map((h) => h.vol || 0);
-  const [selectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const selKey = selectedDate.toISOString().split('T')[0];
+  const isToday = selKey === new Date().toISOString().split('T')[0];
   const [selectedRecipe, setSelectedRecipe] = useState<QuickRecipe | null>(null);
   const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('kiloapp_splash_played'));
 
@@ -103,6 +105,12 @@ const Dashboard = () => {
     }
     return () => { document.body.style.overflow = 'auto'; };
   }, [selectedTrainer, selectedRecipe, showTutorial]);
+
+  // Wybór dnia z paska tygodnia przelicza statystyki, energię i kroki.
+  useEffect(() => {
+    setStats(getTodayStats(selKey));
+    setBurned(getTodayBurned(selKey));
+  }, [selKey]);
 
   const goals = useMemo(() => profile ? calculateDailyGoals(profile) : null, [profile]);
 
@@ -218,7 +226,7 @@ const Dashboard = () => {
                 key={currentStep}
                 initial={{ opacity: 0, y: 20, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                className="bg-card border border-brand/50 p-8 rounded-[2.5rem] w-full max-w-sm relative shadow-[0_0_50px_rgba(37,99,235,0.15)]"
+                className="bg-card border border-brand/50 p-8 rounded-[2.5rem] w-full max-w-sm relative shadow-[0_0_50px_rgba(255,255,255,0.15)]"
               >
                 {/* Arrow */}
                 <div className={`absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-card border-l border-t border-brand/50 rotate-45 ${tutorialSteps[currentStep].pos === 'top' ? '-bottom-3' : '-top-3'}`} />
@@ -263,21 +271,32 @@ const Dashboard = () => {
 
           <div className="flex justify-between">
             {weekDays.map((day, i) => {
-              const today = new Date().getDay();
-              const adjustedToday = today === 0 ? 6 : today - 1;
+              const base = new Date();
+              const dow = base.getDay() === 0 ? 6 : base.getDay() - 1; // poniedziałek = 0
+              const d = new Date(base);
+              d.setDate(base.getDate() - dow + i);
+              const dKey = d.toISOString().split('T')[0];
+              const isSel = dKey === selKey;
+              const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999);
+              const isFuture = d > todayEnd;
               return (
-                <div key={i} className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${i === adjustedToday ? 'bg-foreground text-background' : 'bg-card/40'}`}>
+                <button
+                  key={i}
+                  disabled={isFuture}
+                  onClick={() => setSelectedDate(d)}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold transition-all ${isSel ? 'bg-foreground text-background' : 'bg-card/40 text-foreground'} ${isFuture ? 'opacity-30' : 'active:scale-90'}`}
+                >
                   {day}
-                </div>
+                </button>
               );
             })}
           </div>
 
-          <div onClick={() => { setStepsInput(String(stats.steps || 0)); setEditingSteps(true); }} className={`kilo-card bg-foreground/5 border border-foreground/10 flex items-center justify-between transition-all cursor-pointer active:scale-[0.98] ${showTutorial && currentStep === 1 ? 'relative z-[1001] bg-card ring-2 ring-brand' : ''}`}>
+          <div onClick={() => { if (!isToday) return; setStepsInput(String(stats.steps || 0)); setEditingSteps(true); }} className={`kilo-card bg-foreground/5 border border-foreground/10 flex items-center justify-between transition-all ${isToday ? 'cursor-pointer active:scale-[0.98]' : ''} ${showTutorial && currentStep === 1 ? 'relative z-[1001] bg-card ring-2 ring-brand' : ''}`}>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-foreground/10 flex items-center justify-center"><Footprints size={24} /></div>
               <div>
-                <p className="text-[10px] uppercase font-bold text-muted-foreground">Kroki dzisiaj</p>
+                <p className="text-[10px] uppercase font-bold text-muted-foreground">{isToday ? 'Kroki dzisiaj' : 'Kroki'}</p>
                 <p className="text-2xl font-black">{stats.steps || 0}</p>
               </div>
             </div>
