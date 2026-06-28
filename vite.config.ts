@@ -22,11 +22,11 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       includeAssets: ["favicon.ico", "placeholder.svg"],
       manifest: {
-        name: "KiloApp",
-        short_name: "KiloApp",
-        description: "Moja osobista aplikacja na serwerze",
+        name: "KILO — Trener AI, Dieta, Trening",
+        short_name: "KILO",
+        description: "KILO — jedna aplikacja: licznik kalorii, trening, cardio z GPS, dieta i trener AI.",
         theme_color: "#000000",
-        background_color: "#ffffff",
+        background_color: "#000000",
         display: "standalone",
         start_url: "/",
         icons: [

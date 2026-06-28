@@ -132,7 +132,7 @@ const Dashboard = () => {
   // --- KROKI TUTORIALA ---
   const tutorialSteps = [
     {
-      title: "Witaj w KiloApp!",
+      title: "Witaj w KILO!",
       desc: "To Twoje centrum dowodzenia. Przygotowaliśmy szybki przegląd systemów.",
       pos: "center"
     },
@@ -207,7 +207,7 @@ const Dashboard = () => {
             <div className="w-24 h-24 bg-foreground rounded-[2rem] flex items-center justify-center mb-4">
               <KiloLogo size={52} className="text-background" />
             </div>
-            <h2 className="text-4xl font-black tracking-tighter uppercase italic">KiloApp</h2>
+            <h2 className="text-4xl font-black tracking-tighter uppercase italic">KILO</h2>
           </div>
         </motion.div>
       )}</AnimatePresence>
