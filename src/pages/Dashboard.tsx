@@ -18,6 +18,7 @@ import {
   isOnboardingCompleted 
 } from '@/lib/user-store';
 import { askTrainer } from '@/lib/gemini';
+import { setManualSteps } from '@/lib/health';
 
 const weekDays = ['P', 'W', 'Ś', 'C', 'P', 'S', 'N'];
 
@@ -30,7 +31,9 @@ const TRAINERS = [
 const Dashboard = () => {
   const navigate = useNavigate();
   const [profile] = useState(() => getUserProfile());
-  const [stats] = useState(() => getTodayStats());
+  const [stats, setStats] = useState(() => getTodayStats());
+  const [editingSteps, setEditingSteps] = useState(false);
+  const [stepsInput, setStepsInput] = useState('');
   const [selectedDate] = useState(new Date());
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
   const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('kiloapp_splash_played'));
@@ -252,7 +255,7 @@ const Dashboard = () => {
             })}
           </div>
 
-          <div className={`kilo-card bg-white/5 border border-white/10 flex items-center justify-between transition-all ${showTutorial && currentStep === 1 ? 'relative z-[1001] bg-zinc-900 ring-2 ring-blue-600' : ''}`}>
+          <div onClick={() => { setStepsInput(String(stats.steps || 0)); setEditingSteps(true); }} className={`kilo-card bg-white/5 border border-white/10 flex items-center justify-between transition-all cursor-pointer active:scale-[0.98] ${showTutorial && currentStep === 1 ? 'relative z-[1001] bg-zinc-900 ring-2 ring-blue-600' : ''}`}>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-foreground/10 flex items-center justify-center"><Footprints size={24} /></div>
               <div>
@@ -298,7 +301,7 @@ const Dashboard = () => {
 
           <div className={`grid grid-cols-4 gap-3 transition-all ${showTutorial && currentStep === 3 ? 'relative z-[1001] bg-zinc-900 p-2 rounded-3xl ring-2 ring-blue-600' : ''}`}>
             {[ 
-              { i: ScanLine, l: 'Skanuj', p: '/diet' }, 
+              { i: ScanLine, l: 'Skanuj', p: '/diet?scan=1' },
               { i: Dumbbell, l: 'Trening', p: '/workout' }, 
               { i: Bike, l: 'Cardio', p: '/workout' }, 
               { i: ChefHat, l: 'Przepisy', p: '/diet' } 
@@ -468,6 +471,45 @@ const Dashboard = () => {
                   <Send size={18} />
                 </button>
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <AnimatePresence>
+          {editingSteps && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setEditingSteps(false)}
+              className="fixed inset-0 z-[800] bg-black/80 backdrop-blur-sm flex items-end"
+            >
+              <motion.div
+                initial={{ y: 250 }}
+                animate={{ y: 0 }}
+                exit={{ y: 250 }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full bg-zinc-900 rounded-t-[3rem] p-8 border-t border-white/10 space-y-6"
+              >
+                <h3 className="text-2xl font-black uppercase italic tracking-tighter text-center">Kroki dzisiaj</h3>
+                <input
+                  type="number"
+                  autoFocus
+                  value={stepsInput}
+                  onChange={(e) => setStepsInput(e.target.value)}
+                  className="w-full bg-black text-5xl font-black italic text-center rounded-2xl p-6 outline-none border border-white/10 tabular-nums"
+                  placeholder="0"
+                />
+                <button
+                  onClick={() => {
+                    const v = setManualSteps(Number(stepsInput));
+                    setStats((s) => ({ ...s, steps: v }));
+                    setEditingSteps(false);
+                  }}
+                  className="w-full py-6 bg-white text-black rounded-[2rem] font-black uppercase text-xs tracking-widest"
+                >
+                  Zapisz
+                </button>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>

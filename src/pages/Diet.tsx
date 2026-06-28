@@ -15,6 +15,7 @@ import {
   saveShoppingList,
 } from "@/lib/user-store";
 import { calculateTargets } from "@/lib/nutrition";
+import { analyzeMealPhoto } from "@/lib/gemini";
 
 const glassStyle = "bg-zinc-900/50 backdrop-blur-xl border border-white/10 shadow-2xl";
 
@@ -104,6 +105,12 @@ const Diet = () => {
   const [viewingRecipe, setViewingRecipe] = useState<any>(null);
   const [tempWeight, setTempWeight] = useState(100);
 
+  // --- SKANER AI ---
+  const webcamRef = useRef<Webcam>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [scanResult, setScanResult] = useState<any>(null);
+  const [scanWeight, setScanWeight] = useState(100);
+
   useEffect(() => {
     const savedData = getUserProfile();
     if (savedData) {
@@ -123,6 +130,13 @@ const Diet = () => {
     saveShoppingList(shoppingList);
   }, [shoppingList]);
 
+  // Wejście z Dashboardu („Skanuj") otwiera od razu skaner AI.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("scan") === "1") {
+      setActiveTab("scanner");
+    }
+  }, []);
+
   const dayTotals = useMemo(() => {
     let kcal = 0, p = 0, c = 0, f = 0;
     Object.values(meals).forEach((m: any) => m.items.forEach((i: any) => {
@@ -141,6 +155,43 @@ const Diet = () => {
     toast({ title: "Lista Zakupów", description: "Składniki zostały dodane." });
   };
 
+  const handleScan = async () => {
+    const shot = webcamRef.current?.getScreenshot();
+    if (!shot) {
+      toast({ title: "Brak obrazu", description: "Zezwól na dostęp do kamery." });
+      return;
+    }
+    setIsAnalyzing(true);
+    setScanResult(null);
+    const res = await analyzeMealPhoto(shot);
+    setIsAnalyzing(false);
+    if (res && res.kcal > 0) {
+      setScanResult(res);
+      setScanWeight(res.weight || 100);
+    } else {
+      toast({ title: "Nie rozpoznano dania", description: "Spróbuj ponownie lub dodaj ręcznie." });
+    }
+  };
+
+  const addScannedMeal = () => {
+    if (!scanResult) return;
+    const factor = scanWeight / (scanResult.weight || 100);
+    const item = {
+      id: Date.now(),
+      name: scanResult.name,
+      kcal: Math.round(scanResult.kcal * factor),
+      p: Math.round(scanResult.p * factor),
+      c: Math.round(scanResult.c * factor),
+      f: Math.round(scanResult.f * factor),
+      weight: scanWeight,
+    };
+    const key = selectedMealKey || "breakfast";
+    setMeals((prev: any) => ({ ...prev, [key]: { ...prev[key], items: [...prev[key].items, item] } }));
+    setScanResult(null);
+    setActiveTab(null);
+    toast({ title: "Dodano do dziennika", description: scanResult.name });
+  };
+
   return (
     <AppLayout>
       <div className="px-5 pt-12 pb-32 space-y-8 bg-black min-h-screen text-white font-sans">
@@ -151,10 +202,15 @@ const Diet = () => {
             <h1 className="text-4xl font-black italic tracking-tighter uppercase leading-none">DIETA</h1>
             <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-2 italic">Elite Nutri-Engine Active</p>
           </div>
-          <button onClick={() => setIsShoppingListOpen(true)} className="relative p-4 bg-zinc-900 border border-white/10 rounded-2xl active:scale-95 transition-all">
-            <ShoppingCart size={20} />
-            {shoppingList.length > 0 && <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full text-[10px] font-bold flex items-center justify-center">{shoppingList.length}</span>}
-          </button>
+          <div className="flex gap-3">
+            <button onClick={() => setActiveTab("scanner")} className="p-4 bg-blue-600 rounded-2xl active:scale-95 transition-all shadow-lg shadow-blue-600/20" aria-label="Skaner AI">
+              <Camera size={20} />
+            </button>
+            <button onClick={() => setIsShoppingListOpen(true)} className="relative p-4 bg-zinc-900 border border-white/10 rounded-2xl active:scale-95 transition-all" aria-label="Lista zakupów">
+              <ShoppingCart size={20} />
+              {shoppingList.length > 0 && <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full text-[10px] font-bold flex items-center justify-center">{shoppingList.length}</span>}
+            </button>
+          </div>
         </header>
 
         {/* DASHBOARD */}
@@ -262,8 +318,87 @@ const Diet = () => {
             </motion.div>
           )}
 
+          {/* SKANER AI */}
+          {activeTab === "scanner" && (
+            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="fixed inset-0 z-[1200] bg-black flex flex-col">
+              <div className="p-6 flex justify-between items-center shrink-0">
+                <h2 className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-2">
+                  <Sparkles size={20} className="text-blue-500" /> Skaner AI
+                </h2>
+                <button onClick={() => { setActiveTab(null); setScanResult(null); }} className="p-4 bg-white/5 rounded-full"><X /></button>
+              </div>
+
+              {!scanResult ? (
+                <div className="flex-1 flex flex-col min-h-0">
+                  <div className="relative flex-1 mx-6 rounded-[2.5rem] overflow-hidden border border-white/10">
+                    <Webcam
+                      ref={webcamRef}
+                      audio={false}
+                      screenshotFormat="image/jpeg"
+                      videoConstraints={{ facingMode: "environment" }}
+                      className="w-full h-full object-cover"
+                    />
+                    {isAnalyzing && (
+                      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+                        <Loader2 className="animate-spin text-blue-500" size={48} />
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 animate-pulse">Analiza AI...</p>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6 space-y-3 shrink-0">
+                    <div className="flex gap-2 justify-center flex-wrap">
+                      {Object.entries(meals).map(([key, meal]: [string, any]) => (
+                        <button key={key} onClick={() => setSelectedMealKey(key)} className={`px-3 py-2 rounded-full text-[9px] font-black uppercase transition-all ${selectedMealKey === key ? "bg-white text-black" : "bg-zinc-900 text-zinc-500"}`}>
+                          {meal.name}
+                        </button>
+                      ))}
+                    </div>
+                    <button onClick={handleScan} disabled={isAnalyzing} className="w-full py-6 bg-blue-600 rounded-[2rem] font-black uppercase text-xs tracking-widest disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
+                      <Camera size={18} /> {isAnalyzing ? "Analizuję..." : "Zrób zdjęcie i analizuj"}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-20">
+                  <div className="text-center space-y-2">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">Rozpoznano przez AI</p>
+                    <h3 className="text-3xl font-black uppercase italic tracking-tighter">{scanResult.name}</h3>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-6xl font-black italic tracking-tighter">
+                      {Math.round(scanResult.kcal * (scanWeight / (scanResult.weight || 100)))}
+                      <span className="text-sm opacity-30 ml-2 uppercase">kcal</span>
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { l: "Białko", v: scanResult.p, bg: "bg-blue-600" },
+                      { l: "Węgle", v: scanResult.c, bg: "bg-emerald-600" },
+                      { l: "Tłuszcze", v: scanResult.f, bg: "bg-orange-600" },
+                    ].map((m) => (
+                      <div key={m.l} className="bg-white/5 rounded-2xl p-4 text-center border border-white/5">
+                        <div className={`w-2 h-2 rounded-full ${m.bg} mx-auto mb-2`} />
+                        <p className="text-lg font-black italic">{Math.round(m.v * (scanWeight / (scanResult.weight || 100)))}g</p>
+                        <p className="text-[8px] font-black uppercase text-zinc-500">{m.l}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-white/5 p-6 rounded-[2.5rem] border border-white/10 flex justify-between items-center">
+                    <button onClick={() => setScanWeight((w) => Math.max(1, w - 25))} className="p-4 bg-black rounded-full border border-white/10"><Minus /></button>
+                    <span className="text-3xl font-black italic">{scanWeight}g</span>
+                    <button onClick={() => setScanWeight((w) => w + 25)} className="p-4 bg-black rounded-full border border-white/10"><Plus /></button>
+                  </div>
+                  <div className="space-y-3">
+                    <button onClick={addScannedMeal} className="w-full py-6 bg-white text-black rounded-[2rem] font-black uppercase text-xs tracking-widest">Dodaj do dziennika</button>
+                    <button onClick={() => setScanResult(null)} className="w-full py-4 text-zinc-600 font-black uppercase text-[10px] tracking-widest">Skanuj ponownie</button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          )}
+
           {/* DETALE PRZEPISU */}
-          {(activeTab || viewingRecipe) && (
+          {(activeTab === "recipes" || viewingRecipe) && (
              <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="fixed inset-0 z-[1000] bg-black h-screen flex flex-col overflow-hidden">
                 <div className="p-6 flex justify-between items-center bg-black/50 backdrop-blur-md shrink-0 border-b border-white/10">
                   <h2 className="text-2xl font-black italic uppercase">{viewingRecipe ? "Szczegóły" : "Produkty"}</h2>

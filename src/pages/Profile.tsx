@@ -18,6 +18,8 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState<any>(null);
+  const [history, setHistory] = useState<any[]>([]);
+  const [weightLog, setWeightLog] = useState<any[]>([]);
 
   useEffect(() => {
     const data = Store.getUserProfile();
@@ -25,7 +27,9 @@ const Profile = () => {
       navigate('/onboarding');
     } else {
       setProfile(data);
-      // Symulacja ładowania systemów biometrycznych
+      // Realne dane: zapisz dzisiejszą wagę do trendu i wczytaj historię treningów.
+      setWeightLog(Store.addWeightEntry(data.weight));
+      setHistory(Store.getWorkoutHistory());
       const timer = setTimeout(() => setLoading(false), 800);
       return () => clearTimeout(timer);
     }
@@ -59,6 +63,7 @@ const Profile = () => {
     const updates = { [editingField!]: tempValue };
     Store.updateExtendedProfile(updates);
     setProfile({ ...profile, ...updates });
+    if (editingField === 'weight') setWeightLog(Store.addWeightEntry(Number(tempValue)));
     setEditingField(null);
   };
 
@@ -67,49 +72,59 @@ const Profile = () => {
   const activityLabels: any = { 1: "Siedzący", 2: "Lekka", 3: "Umiarkowana", 4: "Wysoka", 5: "Ekstremalna" };
   const goalLabels: any = { cut: "Redukcja", bulk: "Masa", recomp: "Recomp" };
 
-  // --- KOMPONENTY WYKRESÓW (Custom SVG/Tailwind) ---
-  const StrengthChart = () => (
-    <div className="h-32 w-full flex items-end justify-between gap-1.5 px-2">
-      {[35, 45, 40, 65, 85, 75, 95].map((h, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center gap-2">
-          <div 
-            className="w-full bg-gradient-to-t from-blue-700 to-blue-400 rounded-t-md shadow-[0_0_10px_rgba(37,99,235,0.3)] transition-all duration-1000" 
-            style={{ height: `${h}%` }} 
-          />
-        </div>
-      ))}
+  // --- KOMPONENTY WYKRESÓW (realne dane z historii i logu wagi) ---
+  const EmptyChart = ({ text }: { text: string }) => (
+    <div className="h-32 w-full flex items-center justify-center border border-dashed border-white/10 rounded-2xl">
+      <p className="text-[10px] text-zinc-600 uppercase font-bold italic text-center px-6">{text}</p>
     </div>
   );
 
-  const HeartRateChart = () => (
-    <div className="h-32 w-full relative flex items-center px-2">
-      <svg className="w-full h-full overflow-visible">
-        <path 
-          d="M0 60 L40 55 L80 65 L120 40 L160 30 L200 45 L240 20 L300 15" 
-          fill="none" 
-          stroke="#10b981" 
-          strokeWidth="3" 
-          strokeLinecap="round"
-          className="animate-draw"
-        />
-        <circle cx="240" cy="20" r="4" fill="#10b981" className="animate-pulse" />
-      </svg>
-    </div>
-  );
+  const strengthVols = history.filter((h) => h.type !== 'cardio').slice(-7).map((h) => h.vol || 0);
+  const strengthDelta =
+    strengthVols.length >= 2 && strengthVols[0] > 0
+      ? Math.round(((strengthVols[strengthVols.length - 1] - strengthVols[0]) / strengthVols[0]) * 100)
+      : null;
+  const weightDelta =
+    weightLog.length >= 2 ? +(weightLog[weightLog.length - 1].weight - weightLog[0].weight).toFixed(1) : null;
 
-  const WeightChart = () => (
-    <div className="h-32 w-full flex items-end justify-between gap-3 px-4">
-      {[90, 88, 87, 86, 84.5, 83.8, 83].map((v, i) => (
-        <div key={i} className="flex-1 flex flex-col items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-zinc-400 mb-1" />
-          <div 
-            className="w-full bg-zinc-800 rounded-t-xl border-x border-t border-white/5" 
-            style={{ height: `${(v/90)*100}%` }} 
-          />
-        </div>
-      ))}
-    </div>
-  );
+  const StrengthChart = () => {
+    if (strengthVols.length === 0) return <EmptyChart text="Dodaj trening siłowy, aby zobaczyć progres" />;
+    const max = Math.max(...strengthVols, 1);
+    return (
+      <div className="h-32 w-full flex items-end justify-between gap-1.5 px-2">
+        {strengthVols.map((v, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center gap-2">
+            <div
+              className="w-full bg-gradient-to-t from-blue-700 to-blue-400 rounded-t-md shadow-[0_0_10px_rgba(37,99,235,0.3)] transition-all duration-1000"
+              style={{ height: `${Math.max(8, (v / max) * 100)}%` }}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const WeightChart = () => {
+    const points = weightLog.slice(-7);
+    if (points.length === 0) return <EmptyChart text="Zapisz wagę, aby zobaczyć trend" />;
+    const weights = points.map((p) => p.weight);
+    const max = Math.max(...weights);
+    const min = Math.min(...weights);
+    const range = max - min || 1;
+    return (
+      <div className="h-32 w-full flex items-end justify-between gap-3 px-4">
+        {points.map((p, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-zinc-400 mb-1" />
+            <div
+              className="w-full bg-zinc-800 rounded-t-xl border-x border-t border-white/5 transition-all duration-1000"
+              style={{ height: `${40 + ((p.weight - min) / range) * 55}%` }}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <AppLayout>
@@ -177,7 +192,7 @@ const Profile = () => {
                         <TrendingUp className="text-blue-500" size={18} />
                         <h4 className="text-xs font-black uppercase italic tracking-widest">Postępy Siłowe</h4>
                       </div>
-                      <span className="text-[10px] font-black text-blue-500 bg-blue-500/10 px-2 py-1 rounded-md">+14.2%</span>
+                      <span className="text-[10px] font-black text-blue-500 bg-blue-500/10 px-2 py-1 rounded-md">{strengthDelta !== null ? `${strengthDelta > 0 ? '+' : ''}${strengthDelta}%` : '—'}</span>
                     </div>
                     <div className="p-5 bg-zinc-900 rounded-[2rem] border border-white/5">
                       <StrengthChart />
@@ -194,13 +209,13 @@ const Profile = () => {
                         <Heart className="text-emerald-500" size={18} />
                         <h4 className="text-xs font-black uppercase italic tracking-widest">Tętno Spoczynkowe</h4>
                       </div>
-                      <span className="text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-md">-4 BPM</span>
+                      <span className="text-[10px] font-black text-zinc-500 bg-white/5 px-2 py-1 rounded-md">BRAK DANYCH</span>
                     </div>
                     <div className="p-5 bg-zinc-900 rounded-[2rem] border border-white/5">
-                      <HeartRateChart />
+                      <EmptyChart text="Połącz zegarek, aby śledzić tętno spoczynkowe" />
                     </div>
                     <p className="text-[10px] text-zinc-500 leading-relaxed font-bold uppercase">
-                      <Info className="inline mr-1 text-emerald-500" size={12} /> Stabilizacja tętna wskazuje na wysoką gotowość metaboliczną.
+                      <Info className="inline mr-1 text-emerald-500" size={12} /> Dane tętna pojawią się po połączeniu urządzenia.
                     </p>
                   </div>
 
@@ -211,7 +226,7 @@ const Profile = () => {
                         <Scale className="text-zinc-100" size={18} />
                         <h4 className="text-xs font-black uppercase italic tracking-widest">Masa Ciała (Kg)</h4>
                       </div>
-                      <span className="text-[10px] font-black text-zinc-100 bg-white/10 px-2 py-1 rounded-md">TREND ↓</span>
+                      <span className="text-[10px] font-black text-zinc-100 bg-white/10 px-2 py-1 rounded-md">{weightDelta === null ? 'TREND —' : weightDelta <= 0 ? `TREND ↓ ${weightDelta}kg` : `TREND ↑ +${weightDelta}kg`}</span>
                     </div>
                     <div className="p-5 bg-zinc-900 rounded-[2rem] border border-white/5">
                       <WeightChart />
@@ -251,10 +266,10 @@ const Profile = () => {
                 <DrawerHeader><DrawerTitle className="text-2xl font-black uppercase italic text-center">Select Wearable</DrawerTitle></DrawerHeader>
                 <div className="p-4 space-y-3">
                   {[{ name: 'Apple Watch', icon: <Smartphone /> }, { name: 'Samsung Health', icon: <Watch /> }, { name: 'Garmin Connect', icon: <Bluetooth /> }].map((d) => (
-                    <button key={d.name} className="w-full p-6 bg-zinc-900 rounded-3xl border border-white/5 flex items-center justify-between font-black uppercase italic text-sm">
+                    <div key={d.name} className="w-full p-6 bg-zinc-900 rounded-3xl border border-white/5 flex items-center justify-between font-black uppercase italic text-sm opacity-70">
                       <div className="flex items-center gap-4">{d.icon} {d.name}</div>
-                      <div className="text-[10px] text-blue-500 border border-blue-500/30 px-3 py-1 rounded-full">Połącz</div>
-                    </button>
+                      <div className="text-[10px] text-zinc-500 border border-white/10 px-3 py-1 rounded-full">Wkrótce</div>
+                    </div>
                   ))}
                 </div>
                </div>

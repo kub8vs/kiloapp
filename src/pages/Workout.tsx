@@ -53,6 +53,19 @@ const EXERCISE_DB = [
   { id: 'ab5', name: 'Rowerek', muscle: 'Brzuch', video: 'https://media.giphy.com/media/3o7TKMGpxx66C3GZpu/giphy.gif', tip: 'Wykonuj pełne rotacje tułowia. Przeciwny łokieć do przeciwnego kolana.' }
 ];
 
+// Media ćwiczenia z bezpiecznym fallbackiem (gdy GIF/URL się nie załaduje).
+const ExerciseMedia = ({ src, className }: { src?: string; className?: string }) => {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
+    return (
+      <div className={`flex items-center justify-center bg-gradient-to-br from-zinc-800 to-black ${className || ''}`}>
+        <Dumbbell className="text-zinc-700" size={28} />
+      </div>
+    );
+  }
+  return <img src={src} onError={() => setFailed(true)} className={className} alt="" />;
+};
+
 const Workout = () => {
   // --- STANY CORE ---
   const [activeTab, setActiveTab] = useState<'strength' | 'cardio' | 'atlas' | 'history'>('strength');
@@ -264,7 +277,7 @@ const Workout = () => {
              </div>
              {EXERCISE_DB.filter(ex => ex.name.toLowerCase().includes(search.toLowerCase())).map(ex => (
                <div key={ex.id} onClick={() => setViewingExercise(ex)} className="bg-zinc-900 p-4 rounded-3xl border border-zinc-800 flex items-center gap-4 cursor-pointer">
-                 <img src={ex.video} className="w-14 h-14 rounded-xl object-cover opacity-50" />
+                 <ExerciseMedia src={ex.video} className="w-14 h-14 rounded-xl object-cover" />
                  <div className="flex-1">
                     <h4 className="font-black text-xs uppercase italic tracking-tight">{ex.name}</h4>
                     <p className="text-[8px] text-zinc-600 font-bold uppercase">{ex.muscle}</p>
@@ -286,7 +299,7 @@ const Workout = () => {
               </header>
               <div className="space-y-8">
                 <div className="aspect-video w-full rounded-[2.5rem] overflow-hidden border border-zinc-800">
-                  <img src={viewingExercise.video} className="w-full h-full object-cover" alt={viewingExercise.name} />
+                  <ExerciseMedia src={viewingExercise.video} className="w-full h-full object-cover" />
                 </div>
                 <div className="space-y-4">
                   <h1 className="text-4xl font-black italic uppercase leading-none tracking-tighter">{viewingExercise.name}</h1>

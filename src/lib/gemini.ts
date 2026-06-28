@@ -31,3 +31,52 @@ export const askTrainer = async (trainerRole: string, userMessage: string) => {
     return "Trener ma teraz przerwę. Spróbuj za chwilę!";
   }
 };
+
+export interface MealAnalysis {
+  name: string;
+  kcal: number;
+  p: number;
+  c: number;
+  f: number;
+  weight: number;
+}
+
+// Skaner posiłków: zdjęcie -> rozpoznanie dania i oszacowanie makro (Gemini Vision).
+export const analyzeMealPhoto = async (imageDataUrl: string): Promise<MealAnalysis | null> => {
+  if (!genAI) return null;
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }, { apiVersion: "v1" });
+
+    const match = imageDataUrl.match(/^data:(.+);base64,(.*)$/);
+    const mimeType = match?.[1] || "image/jpeg";
+    const data = match?.[2] || imageDataUrl;
+
+    const prompt =
+      "Jesteś ekspertem żywieniowym KILO. Rozpoznaj danie na zdjęciu i oszacuj wartości " +
+      "odżywcze dla widocznej porcji. Odpowiedz WYŁĄCZNIE czystym JSON (bez markdown, bez ```), " +
+      'w formacie: {"name":"nazwa po polsku","weight":gramy,"kcal":liczba,"p":bialko_g,"c":wegle_g,"f":tluszcz_g}. ' +
+      'Jeśli to nie jedzenie: {"name":"Nie rozpoznano","weight":0,"kcal":0,"p":0,"c":0,"f":0}.';
+
+    const result = await model.generateContent([
+      prompt,
+      { inlineData: { mimeType, data } },
+    ]);
+
+    const text = (await result.response).text();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return null;
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    return {
+      name: String(parsed.name || "Posiłek"),
+      kcal: Math.max(0, Math.round(Number(parsed.kcal) || 0)),
+      p: Math.max(0, Math.round(Number(parsed.p) || 0)),
+      c: Math.max(0, Math.round(Number(parsed.c) || 0)),
+      f: Math.max(0, Math.round(Number(parsed.f) || 0)),
+      weight: Math.max(1, Math.round(Number(parsed.weight) || 100)),
+    };
+  } catch (error: any) {
+    console.error("Błąd analizy zdjęcia:", error);
+    return null;
+  }
+};

@@ -47,16 +47,18 @@ Cel: jeden spójny system wizualny zgodny z brandbookiem.
 
 ---
 
-## FAZA 3 — „Prawdziwy produkt, nie demo” 🟠
+## FAZA 3 — „Prawdziwy produkt, nie demo” 🟠 (w większości zrobione)
 
 Cel: realne dane zamiast atrap.
 
-- [ ] 3.1 Kroki / zdrowie: HealthKit + Google Fit przez plugin Capacitor
-- [ ] 3.2 Atlas ćwiczeń: realne media (martwe GIF-y do wymiany)
-- [ ] 3.3 Skaner posiłków AI (kamera → rozpoznanie → makro) — feature „wow”
-- [ ] 3.4 Profil „Bio-Intelligence”: realne wykresy z historii zamiast hardkodu
-- [ ] 3.5 Integracje z zegarkami (Apple Watch / Samsung Health / Garmin)
-- [ ] 3.6 Baza przepisów i produktów z prawdziwego źródła (zamiast tablicy w kodzie)
+- [x] **3.3 Skaner posiłków AI** (kamera → Gemini Vision → makro → dziennik) — ⭐ flagowa funkcja
+- [x] **3.4 Profil „Bio-Intelligence”**: siła z historii treningów, masa z logu wagi; tętno = uczciwy „brak danych”
+- [x] **3.1 Kroki**: realny, trwały zapis + ręczne wpisanie (`lib/health.ts`, warstwa gotowa pod natywne) — koniec zahardkodowanego 0
+- [~] **3.2 Atlas**: dodany fallback na markowy placeholder (koniec połamanych obrazów); realne, kuratorowane media wideo wciąż do dostarczenia
+- [~] **3.5 Zegarki**: uczciwy stan „Wkrótce” zamiast martwych przycisków; realne parowanie (BLE/HealthKit) wymaga buildu natywnego + urządzenia
+- [ ] 3.6 Baza przepisów/produktów z zewnętrznego źródła (np. Open Food Facts) zamiast tablicy w kodzie
+
+> Pozostałe `[~]/[ ]` wymagają zasobów zewnętrznych (media, natywne API) — do realizacji na urządzeniu.
 
 ---
 

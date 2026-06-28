@@ -63,6 +63,7 @@ const KEYS = {
   LOG: 'kilo_daily_log',
   SHOPPING: 'kilo_shopping_list',
   STEPS: 'kilo_steps',
+  WEIGHT: 'kilo_weight_log',
 };
 
 const todayKey = () => new Date().toISOString().split('T')[0];
@@ -160,6 +161,32 @@ export const getSteps = (): number => {
 
 export const saveSteps = (steps: number): void => {
   localStorage.setItem(KEYS.STEPS, JSON.stringify({ date: todayKey(), steps }));
+};
+
+// --- LOG MASY CIAŁA (realny wykres trendu) ---
+export interface WeightEntry {
+  date: string;
+  weight: number;
+}
+
+export const getWeightLog = (): WeightEntry[] => {
+  try {
+    return JSON.parse(localStorage.getItem(KEYS.WEIGHT) || '[]');
+  } catch (e) {
+    return [];
+  }
+};
+
+export const addWeightEntry = (weight: number): WeightEntry[] => {
+  const value = Number(weight);
+  if (!value || Number.isNaN(value)) return getWeightLog();
+  const date = todayKey();
+  const updated = [...getWeightLog().filter((e) => e.date !== date), { date, weight: value }]
+    .sort((a, b) => a.date.localeCompare(b.date))
+    .slice(-30); // ostatnie 30 wpisów
+  localStorage.setItem(KEYS.WEIGHT, JSON.stringify(updated));
+  syncToCloud('weightLog', updated);
+  return updated;
 };
 
 // --- STATYSTYKI DNIA (liczone z logu, więc zawsze spójne z Dietą) ---
