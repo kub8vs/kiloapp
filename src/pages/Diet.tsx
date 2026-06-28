@@ -15,7 +15,7 @@ import {
   saveShoppingList,
 } from "@/lib/user-store";
 import { calculateTargets } from "@/lib/nutrition";
-import { analyzeMealPhoto } from "@/lib/gemini";
+import { analyzeMealPhoto, type MealAnalysis } from "@/lib/gemini";
 
 const glassStyle = "bg-zinc-900/50 backdrop-blur-xl border border-white/10 shadow-2xl";
 
@@ -108,7 +108,7 @@ const Diet = () => {
   // --- SKANER AI ---
   const webcamRef = useRef<Webcam>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [scanResult, setScanResult] = useState<any>(null);
+  const [scanResult, setScanResult] = useState<MealAnalysis | null>(null);
   const [scanWeight, setScanWeight] = useState(100);
 
   useEffect(() => {
@@ -227,7 +227,7 @@ const Diet = () => {
                 <Zap className="text-yellow-500" size={30} fill="currentColor" />
               </div>
               <div className="grid grid-cols-3 gap-4">
-                 {[{l: "Białko", v: dayTotals.p, t: userProfile.p, bg: "bg-blue-600"}, {l: "Węgle", v: dayTotals.c, t: userProfile.c, bg: "bg-emerald-600"}, {l: "Tłuszcze", v: dayTotals.f, t: userProfile.f, bg: "bg-orange-600"}].map(m => (
+                 {[{l: "Białko", v: dayTotals.p, t: userProfile.p, bg: "bg-macro-protein"}, {l: "Węgle", v: dayTotals.c, t: userProfile.c, bg: "bg-macro-carbs"}, {l: "Tłuszcze", v: dayTotals.f, t: userProfile.f, bg: "bg-macro-fat"}].map(m => (
                    <div key={m.l} className="space-y-2">
                      <p className="text-[8px] font-black uppercase text-zinc-500">{m.l}</p>
                      <p className="text-sm font-black italic">{m.v}<span className="text-[9px] opacity-20">/{m.t}g</span></p>
@@ -372,9 +372,9 @@ const Diet = () => {
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     {[
-                      { l: "Białko", v: scanResult.p, bg: "bg-blue-600" },
-                      { l: "Węgle", v: scanResult.c, bg: "bg-emerald-600" },
-                      { l: "Tłuszcze", v: scanResult.f, bg: "bg-orange-600" },
+                      { l: "Białko", v: scanResult.p, bg: "bg-macro-protein" },
+                      { l: "Węgle", v: scanResult.c, bg: "bg-macro-carbs" },
+                      { l: "Tłuszcze", v: scanResult.f, bg: "bg-macro-fat" },
                     ].map((m) => (
                       <div key={m.l} className="bg-white/5 rounded-2xl p-4 text-center border border-white/5">
                         <div className={`w-2 h-2 rounded-full ${m.bg} mx-auto mb-2`} />

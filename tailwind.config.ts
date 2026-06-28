@@ -47,6 +47,14 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        brand: {
+          DEFAULT: "hsl(var(--kilo-blue))",
+        },
+        macro: {
+          protein: "hsl(var(--kilo-protein))",
+          carbs: "hsl(var(--kilo-carbs))",
+          fat: "hsl(var(--kilo-fat))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

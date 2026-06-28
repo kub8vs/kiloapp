@@ -42,12 +42,15 @@
     --kilo-dark: 0 0% 10%;
     --kilo-gray: 240 1% 56%;
     --kilo-white: 0 0% 100%;
-    
-    /* Macro Ring Colors */
-    --kilo-protein: 0 0% 100%;
-    --kilo-carbs: 240 1% 56%;
-    --kilo-fat: 0 0% 40%;
-    
+
+    /* Brand accent — Elite Blue (#2563EB) */
+    --kilo-blue: 221 83% 53%;
+
+    /* Macro Ring Colors — spójne wszędzie: B niebieski / W zielony / T pomarańczowy */
+    --kilo-protein: 221 83% 53%;
+    --kilo-carbs: 160 84% 39%;
+    --kilo-fat: 25 95% 53%;
+
     /* Accent Colors */
     --kilo-success: 142 76% 36%;
     --kilo-warning: 38 92% 50%;

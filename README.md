@@ -1,73 +1,75 @@
-# Welcome to your Lovable project
+# KILO
 
-## Project info
+**Jedna aplikacja fitness zamiast pięciu.** KILO łączy licznik kalorii, trening siłowy,
+cardio z GPS, dietę i trenerów AI w jednym, dopracowanym ekosystemie (iOS / Android / PWA).
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+- 🎨 Marka i design system: [`BRANDBOOK.md`](./BRANDBOOK.md)
+- 🗺️ Plan rozwoju: [`ROADMAP.md`](./ROADMAP.md)
+- 🧠 Pamięć projektu (dla Claude Code): [`CLAUDE.md`](./CLAUDE.md)
 
-## How can I edit this code?
+## Funkcje
 
-There are several ways of editing your application.
+- **Dashboard** — kroki, makro (pierścienie), szybkie akcje, trenerzy AI, polecane przepisy.
+- **Dieta** — cele kaloryczne, dziennik posiłków (trwały), nawodnienie, baza przepisów,
+  lista zakupów oraz **skaner posiłków AI** (zdjęcie → rozpoznanie → makro).
+- **Trening** — plany i sesje siłowe (serie, powtórzenia, timer przerw, objętość),
+  cardio z GPS (dystans, czas), Atlas ćwiczeń, historia z poradami AI.
+- **Profil** — Bio-Intelligence (realne wykresy siły i masy z danych), parametry, reset.
+- **Trenerzy AI** — Kamil (siła), Marta (redukcja), Seba (motywacja) — napędzani Gemini.
 
-**Use Lovable**
+## Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+Vite · React 18 · TypeScript · Tailwind CSS · shadcn/ui (Radix) · Framer Motion ·
+React Router · TanStack Query · Firebase (Auth + Firestore) · Google Generative AI (Gemini) ·
+Capacitor 8 (iOS/Android) · PWA.
 
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Szybki start
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# 1. Zależności
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# 2. Konfiguracja środowiska
+cp .env.example .env
+# uzupełnij VITE_GEMINI_API_KEY swoim kluczem z Google AI Studio
+# (https://aistudio.google.com/app/apikey)
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 3. Tryb deweloperski
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Bez `VITE_GEMINI_API_KEY` aplikacja działa, ale funkcje AI (trenerzy, skaner posiłków)
+pokażą komunikat o braku konfiguracji.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Skrypty
 
-**Use GitHub Codespaces**
+| Komenda | Opis |
+|---|---|
+| `npm run dev` | Serwer deweloperski (Vite) |
+| `npm run build` | Build produkcyjny do `dist/` |
+| `npm run preview` | Podgląd buildu |
+| `npm run lint` | ESLint |
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Aplikacja natywna (Capacitor)
 
-## What technologies are used for this project?
+```sh
+npm run build
+npx cap sync
+npx cap open ios     # lub: npx cap open android
+```
 
-This project is built with:
+## Bezpieczeństwo
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- Sekrety trzymamy w `.env` (gitignored), nigdy w kodzie. Wzór: `.env.example`.
+- Dostęp do bazy chroni [`firestore.rules`](./firestore.rules) — każdy użytkownik widzi
+  tylko własne dane. Wdrożenie: `firebase deploy --only firestore:rules`.
 
-## How can I deploy this project?
+## Struktura
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```
+src/
+  pages/        Dashboard · Diet · Workout · Profile · Onboarding
+  lib/          nutrition.ts (silnik kalorii) · user-store.ts · gemini.ts · health.ts · firebase.ts
+  components/   KiloLogo.tsx · layout/ · ui/ (shadcn) · ProgressRing
+  index.css     design tokens (Modern Noir + Elite Blue)
+```

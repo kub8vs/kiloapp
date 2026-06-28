@@ -13,6 +13,7 @@ import { signInAnonymously } from 'firebase/auth';
 
 import AppLayout from '@/components/layout/AppLayout';
 import ProgressRing from '@/components/ui/ProgressRing';
+import KiloLogo from '@/components/KiloLogo';
 import { 
   getUserProfile, getTodayStats, calculateDailyGoals, 
   isOnboardingCompleted 
@@ -179,7 +180,7 @@ const Dashboard = () => {
         >
           <div className="flex flex-col items-center">
             <div className="w-24 h-24 bg-foreground rounded-[2rem] flex items-center justify-center mb-4">
-              <Dumbbell size={48} className="text-background" />
+              <KiloLogo size={52} className="text-background" />
             </div>
             <h2 className="text-4xl font-black tracking-tighter uppercase italic">KiloApp</h2>
           </div>

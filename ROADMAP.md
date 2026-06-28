@@ -33,17 +33,18 @@ Cel: dane, którym można ufać. Bez tego nie ma sensu budować UI.
 
 ---
 
-## FAZA 2 — Frontend / spójność marki 🟡
+## FAZA 2 — Frontend / spójność marki 🟡 (w większości zrobione)
 
 Cel: jeden spójny system wizualny zgodny z brandbookiem.
 
-- [ ] 2.1 Tokeny koloru: akcent (Elite Blue) jako zmienna CSS, koniec hardkodów `blue-600` po stronach
-- [ ] 2.2 Kolory makro spójne: Dashboard = Diet (B niebieski / W zielony / T pomarańczowy)
-- [ ] 2.3 `theme_color` w manifeście → `#000000`; ujednolicić splash/ikony
-- [ ] 2.4 Docelowe logo (monogram KILO) zamiast `Zap`/`Dumbbell`
-- [ ] 2.5 Przegląd typografii i odstępów wg brandbooka (sygnatura nagłówków)
-- [ ] 2.6 Stany puste / ładowania / błędu — spójne komponenty
-- [ ] 2.7 Sprzątanie: README (zamiast szablonu Lovable), usunąć `ngrok` z zależności, martwy `Index.tsx`
+- [x] 2.1 Tokeny koloru: `--kilo-blue` + kolory Tailwind `brand` i `macro-*` (token zamiast hardkodu)
+- [x] 2.2 Kolory makro spójne: Dashboard = Diet (B niebieski / W zielony / T pomarańczowy)
+- [x] 2.3 `theme_color` + `background_color` w manifeście → `#000000`
+- [x] 2.4 Docelowe logo (monogram `KiloLogo`) w splashu i onboardingu zamiast `Zap`/`Dumbbell`
+- [~] 2.5 Przegląd typografii i odstępów — system już spójny; pełny audyt do zrobienia
+- [~] 2.6 Stany puste/ładowania (dodane: `EmptyChart`, stany skanera) — do ujednolicenia globalnie
+- [x] 2.7 Sprzątanie: README przepisany, `ngrok` usunięty, martwy `Index.tsx` skasowany
+- [ ] 2.8 Dług: pełne dotypowanie (usunięcie `any` z kodu Lovable) — przenieść do FAZY 4
 
 ---
 

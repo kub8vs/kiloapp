@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronLeft, Zap, Chrome, Apple as AppleIcon, Dumbbell, Home, Target, User } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Chrome, Apple as AppleIcon, Dumbbell, Home, Target, User } from 'lucide-react';
+import KiloLogo from '@/components/KiloLogo';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { saveUserProfile, type UserProfile } from '@/lib/user-store';
@@ -118,7 +119,7 @@ const Onboarding = () => {
             {step === 'welcome' && (
               <div className="text-center space-y-10">
                 <div className="w-20 h-20 bg-white rounded-3xl mx-auto flex items-center justify-center -rotate-6 shadow-[0_0_30px_rgba(255,255,255,0.2)]">
-                  <Zap size={40} className="text-black fill-black" />
+                  <KiloLogo size={40} className="text-black" />
                 </div>
                 <div className="space-y-2">
                   <h1 className="text-6xl font-black tracking-tighter uppercase italic leading-none">KILO<br/>ELITE</h1>
