@@ -8,10 +8,11 @@ import {
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import AppLayout from '@/components/layout/AppLayout';
-import { 
-  getWorkoutRoutines, getWorkoutHistory, addToHistory, 
-  deleteHistoryItem, clearHistory, saveRoutine, deleteRoutine
+import {
+  getWorkoutRoutines, getWorkoutHistory, addToHistory,
+  deleteHistoryItem, clearHistory, saveRoutine, deleteRoutine, getUserProfile
 } from '@/lib/user-store';
+import { cardioCalories, strengthCalories } from '@/lib/exercise-calories';
 
 // --- GIGANTYCZNA BAZA 30 ĆWICZEŃ Z PROTIPAMI (Atlas) ---
 const EXERCISE_DB = [
@@ -72,6 +73,7 @@ const Workout = () => {
   const [routines, setRoutines] = useState<any[]>([]);
   const [history, setHistory] = useState<any[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const userWeight = getUserProfile()?.weight || 70;
   const [search, setSearch] = useState("");
 
   // --- STANY SESJI TRENINGOWEJ ---
@@ -254,8 +256,27 @@ const Workout = () => {
             </div>
             <button 
               onClick={() => {
-                if(!isCardioTracking) { setDistance(0); setCardioTime(0); }
-                setIsCardioTracking(!isCardioTracking);
+                if (isCardioTracking) {
+                  // STOP: zapisz sesję cardio do historii (kcal wg MET/ACSM).
+                  if (cardioTime > 5) {
+                    addToHistory({
+                      id: Date.now().toString(),
+                      type: 'cardio',
+                      name: 'Cardio',
+                      date: new Date().toLocaleDateString(),
+                      duration: formatTime(cardioTime),
+                      details: `${distance.toFixed(2)} km`,
+                      distance: +distance.toFixed(2),
+                      kcal: cardioCalories(distance, cardioTime, userWeight),
+                    });
+                    setHistory(getWorkoutHistory());
+                  }
+                  setIsCardioTracking(false);
+                } else {
+                  setDistance(0);
+                  setCardioTime(0);
+                  setIsCardioTracking(true);
+                }
               }}
               className={`w-full py-7 rounded-[2.5rem] font-black uppercase text-lg ${isCardioTracking ? 'bg-red-600' : 'bg-white text-black'}`}
             >
@@ -599,7 +620,7 @@ const Workout = () => {
                   addToHistory({ 
                     id: Date.now().toString(), type: 'strength', name: activeWorkout.name, 
                     date: new Date().toLocaleDateString(), duration: formatTime(timer), details: `${vol}kg`,
-                    vol: vol, kcal: Math.round(vol * 0.05) + 100, exercises_data: activeWorkout.exercises 
+                    vol: vol, kcal: strengthCalories(timer, userWeight), exercises_data: activeWorkout.exercises
                   });
                   setActiveWorkout(null); setShowSaveModal(false); setHistory(getWorkoutHistory()); setActiveTab('history');
                 }}

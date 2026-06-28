@@ -14,9 +14,9 @@ import { signInAnonymously } from 'firebase/auth';
 import AppLayout from '@/components/layout/AppLayout';
 import ProgressRing from '@/components/ui/ProgressRing';
 import KiloLogo from '@/components/KiloLogo';
-import { 
-  getUserProfile, getTodayStats, calculateDailyGoals, 
-  isOnboardingCompleted 
+import {
+  getUserProfile, getTodayStats, calculateDailyGoals,
+  isOnboardingCompleted, getTodayBurned, getWorkoutHistory
 } from '@/lib/user-store';
 import { askTrainer } from '@/lib/gemini';
 import { setManualSteps } from '@/lib/health';
@@ -35,6 +35,9 @@ const Dashboard = () => {
   const [stats, setStats] = useState(() => getTodayStats());
   const [editingSteps, setEditingSteps] = useState(false);
   const [stepsInput, setStepsInput] = useState('');
+  const [burned] = useState(() => getTodayBurned());
+  const [history] = useState(() => getWorkoutHistory());
+  const strengthVols = history.filter((h) => h.type !== 'cardio').slice(-8).map((h) => h.vol || 0);
   const [selectedDate] = useState(new Date());
   const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
   const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('kiloapp_splash_played'));
@@ -300,6 +303,24 @@ const Dashboard = () => {
             </div>
           </div>
 
+          <div className="kilo-card bg-white/5 border border-white/10">
+            <h3 className="font-black uppercase italic tracking-tighter mb-4 text-sm">Bilans Energii</h3>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <p className="text-[9px] font-black uppercase text-muted-foreground">Cel</p>
+                <p className="text-lg font-black italic">{goals.calories}</p>
+              </div>
+              <div>
+                <p className="text-[9px] font-black uppercase text-muted-foreground">Spalone</p>
+                <p className="text-lg font-black italic text-macro-carbs">+{burned}</p>
+              </div>
+              <div>
+                <p className="text-[9px] font-black uppercase text-muted-foreground">Zostało</p>
+                <p className="text-lg font-black italic">{Math.max(0, goals.calories + burned - stats.calories)}</p>
+              </div>
+            </div>
+          </div>
+
           <div className={`grid grid-cols-4 gap-3 transition-all ${showTutorial && currentStep === 3 ? 'relative z-[1001] bg-zinc-900 p-2 rounded-3xl ring-2 ring-blue-600' : ''}`}>
             {[ 
               { i: ScanLine, l: 'Skanuj', p: '/diet?scan=1' },
@@ -363,11 +384,27 @@ const Dashboard = () => {
               <TrendingUp size={18} className="text-primary" />
               <h3 className="font-black uppercase italic text-sm">Progres Siłowy</h3>
             </div>
-            <div className="h-40 flex items-center justify-center border border-dashed border-white/10 rounded-2xl">
-              <p className="text-[10px] text-muted-foreground uppercase font-bold italic text-center px-6">
-                Dodaj swój pierwszy trening,<br/>aby zobaczyć wykres progresu
-              </p>
-            </div>
+            {strengthVols.length === 0 ? (
+              <div className="h-40 flex items-center justify-center border border-dashed border-white/10 rounded-2xl">
+                <p className="text-[10px] text-muted-foreground uppercase font-bold italic text-center px-6">
+                  Dodaj swój pierwszy trening,<br/>aby zobaczyć wykres progresu
+                </p>
+              </div>
+            ) : (
+              <div className="h-40 flex items-end justify-between gap-2 px-2">
+                {strengthVols.map((v, i) => {
+                  const max = Math.max(...strengthVols, 1);
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                      <div
+                        className="w-full bg-gradient-to-t from-brand/40 to-brand rounded-t-md transition-all duration-1000"
+                        style={{ height: `${Math.max(8, (v / max) * 100)}%` }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 

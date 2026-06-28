@@ -13,6 +13,7 @@ import {
   saveDailyLog,
   getShoppingList,
   saveShoppingList,
+  getTodayBurned,
 } from "@/lib/user-store";
 import { calculateTargets } from "@/lib/nutrition";
 import { analyzeMealPhoto, type MealAnalysis } from "@/lib/gemini";
@@ -110,6 +111,7 @@ const Diet = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [scanResult, setScanResult] = useState<MealAnalysis | null>(null);
   const [scanWeight, setScanWeight] = useState(100);
+  const [burned, setBurned] = useState(0);
 
   useEffect(() => {
     const savedData = getUserProfile();
@@ -118,6 +120,7 @@ const Diet = () => {
       const t = calculateTargets(savedData);
       setUserProfile({ kcal: t.calories, p: t.protein, c: t.carbs, f: t.fat, weight: savedData.weight });
     }
+    setBurned(getTodayBurned());
   }, []);
 
   // Trwały zapis dziennika (posiłki + woda) — Dashboard czyta to samo źródło.
@@ -222,7 +225,10 @@ const Diet = () => {
               <div className="flex justify-between items-end mb-8">
                 <div className="space-y-1">
                   <p className="text-[10px] font-black uppercase text-zinc-500 tracking-widest italic">Zostało Energii</p>
-                  <h2 className="text-6xl font-black italic tracking-tighter">{Math.max(0, userProfile.kcal - dayTotals.kcal)} <span className="text-sm opacity-20 ml-2 uppercase italic">kcal</span></h2>
+                  <h2 className="text-6xl font-black italic tracking-tighter">{Math.max(0, userProfile.kcal + burned - dayTotals.kcal)} <span className="text-sm opacity-20 ml-2 uppercase italic">kcal</span></h2>
+                  <p className="text-[10px] font-bold uppercase text-zinc-600 tracking-wide">
+                    Cel {userProfile.kcal}{burned > 0 && <span className="text-macro-carbs"> + {burned} spalone</span>} − {dayTotals.kcal} zjedzone
+                  </p>
                 </div>
                 <Zap className="text-yellow-500" size={30} fill="currentColor" />
               </div>

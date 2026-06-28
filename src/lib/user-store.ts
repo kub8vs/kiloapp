@@ -1,6 +1,7 @@
 import { db, auth } from './firebase';
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { calculateTargets } from './nutrition';
+import type { HistoryEntry } from './types';
 
 export interface UserProfile {
   name: string;
@@ -237,11 +238,19 @@ export const deleteRoutine = (id: string) => {
   syncToCloud('routines', updated);
 };
 
-export const getWorkoutHistory = () => {
+export const getWorkoutHistory = (): HistoryEntry[] => {
   try {
     const data = localStorage.getItem(KEYS.HISTORY);
     return data ? JSON.parse(data) : [];
   } catch (e) { return []; }
+};
+
+// Suma kalorii spalonych dziś (z historii treningów) — do bilansu energii.
+export const getTodayBurned = (): number => {
+  const today = new Date().toLocaleDateString();
+  return getWorkoutHistory()
+    .filter((h) => h.date === today)
+    .reduce((sum, h) => sum + (h.kcal || 0), 0);
 };
 
 export const addToHistory = (entry: any) => {
