@@ -22,7 +22,7 @@ import { calculateTargets } from "@/lib/nutrition";
 import type { Recipe } from "@/lib/types";
 import { analyzeMealPhoto, type MealAnalysis } from "@/lib/gemini";
 
-const glassStyle = "bg-zinc-900/50 backdrop-blur-xl border border-white/10 shadow-2xl";
+const glassStyle = "bg-card/50 backdrop-blur-xl border border-foreground/10 shadow-2xl";
 
 type MealKey = keyof DailyLog['meals'];
 
@@ -219,21 +219,21 @@ const Diet = () => {
 
   return (
     <AppLayout>
-      <div className="px-5 pt-12 pb-32 space-y-8 bg-black min-h-screen text-white font-sans">
+      <div className="px-5 pt-12 pb-32 space-y-8 bg-background min-h-screen text-foreground font-sans">
         
         {/* HEADER */}
         <header className="flex justify-between items-center">
           <div>
             <h1 className="text-4xl font-black italic tracking-tighter uppercase leading-none">DIETA</h1>
-            <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-[0.2em] mt-2 italic">Elite Nutri-Engine Active</p>
+            <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.2em] mt-2 italic">Elite Nutri-Engine Active</p>
           </div>
           <div className="flex gap-3">
-            <button onClick={() => setActiveTab("scanner")} className="p-4 bg-blue-600 rounded-2xl active:scale-95 transition-all shadow-lg shadow-blue-600/20" aria-label="Skaner AI">
+            <button onClick={() => setActiveTab("scanner")} className="p-4 bg-brand rounded-2xl active:scale-95 transition-all shadow-lg shadow-brand/20" aria-label="Skaner AI">
               <Camera size={20} />
             </button>
-            <button onClick={() => setIsShoppingListOpen(true)} className="relative p-4 bg-zinc-900 border border-white/10 rounded-2xl active:scale-95 transition-all" aria-label="Lista zakupów">
+            <button onClick={() => setIsShoppingListOpen(true)} className="relative p-4 bg-card border border-foreground/10 rounded-2xl active:scale-95 transition-all" aria-label="Lista zakupów">
               <ShoppingCart size={20} />
-              {shoppingList.length > 0 && <span className="absolute -top-1 -right-1 w-5 h-5 bg-blue-600 rounded-full text-[10px] font-bold flex items-center justify-center">{shoppingList.length}</span>}
+              {shoppingList.length > 0 && <span className="absolute -top-1 -right-1 w-5 h-5 bg-brand rounded-full text-[10px] font-bold flex items-center justify-center">{shoppingList.length}</span>}
             </button>
           </div>
         </header>
@@ -241,14 +241,14 @@ const Diet = () => {
         {/* DASHBOARD */}
         <section className={`p-8 rounded-[2.5rem] ${glassStyle}`}>
           {!userProfile ? (
-            <div className="flex items-center justify-center py-10 text-zinc-500">Synchronizacja Elite...</div>
+            <div className="flex items-center justify-center py-10 text-muted-foreground">Synchronizacja Elite...</div>
           ) : (
             <>
               <div className="flex justify-between items-end mb-8">
                 <div className="space-y-1">
-                  <p className="text-[10px] font-black uppercase text-zinc-500 tracking-widest italic">Zostało Energii</p>
+                  <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest italic">Zostało Energii</p>
                   <h2 className="text-6xl font-black italic tracking-tighter">{Math.max(0, userProfile.kcal + burned - dayTotals.kcal)} <span className="text-sm opacity-20 ml-2 uppercase italic">kcal</span></h2>
-                  <p className="text-[10px] font-bold uppercase text-zinc-600 tracking-wide">
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-wide">
                     Cel {userProfile.kcal}{burned > 0 && <span className="text-macro-carbs"> + {burned} spalone</span>} − {dayTotals.kcal} zjedzone
                   </p>
                 </div>
@@ -257,9 +257,9 @@ const Diet = () => {
               <div className="grid grid-cols-3 gap-4">
                  {[{l: "Białko", v: dayTotals.p, t: userProfile.p, bg: "bg-macro-protein"}, {l: "Węgle", v: dayTotals.c, t: userProfile.c, bg: "bg-macro-carbs"}, {l: "Tłuszcze", v: dayTotals.f, t: userProfile.f, bg: "bg-macro-fat"}].map(m => (
                    <div key={m.l} className="space-y-2">
-                     <p className="text-[8px] font-black uppercase text-zinc-500">{m.l}</p>
+                     <p className="text-[8px] font-black uppercase text-muted-foreground">{m.l}</p>
                      <p className="text-sm font-black italic">{m.v}<span className="text-[9px] opacity-20">/{m.t}g</span></p>
-                     <div className="h-1 bg-white/5 rounded-full overflow-hidden"><motion.div animate={{ width: `${Math.min(100, (m.v / m.t) * 100)}%` }} className={`h-full ${m.bg}`} /></div>
+                     <div className="h-1 bg-foreground/5 rounded-full overflow-hidden"><motion.div animate={{ width: `${Math.min(100, (m.v / m.t) * 100)}%` }} className={`h-full ${m.bg}`} /></div>
                    </div>
                  ))}
               </div>
@@ -273,17 +273,17 @@ const Diet = () => {
             <div key={key} className={`p-6 rounded-[2.5rem] ${glassStyle}`}>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-black uppercase italic tracking-tighter">{meal.name}</h3>
-                <span className="text-xs font-black text-zinc-600">{meal.items.reduce((a, b) => a + b.kcal, 0)} kcal</span>
+                <span className="text-xs font-black text-muted-foreground">{meal.items.reduce((a, b) => a + b.kcal, 0)} kcal</span>
               </div>
               <div className="space-y-3">
                 {meal.items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center bg-white/5 p-4 rounded-2xl">
+                  <div key={item.id} className="flex justify-between items-center bg-foreground/5 p-4 rounded-2xl">
                     <div className="text-xs font-bold uppercase">{item.name} <span className="text-[8px] opacity-30 ml-2">{item.weight}g</span></div>
                     <button onClick={() => setMeals((prev) => ({...prev, [key]: {...meal, items: meal.items.filter((i)=>i.id !== item.id)}} as DailyLog['meals']))}><Trash2 size={16}/></button>
                   </div>
                 ))}
               </div>
-              <button onClick={() => { setSelectedMealKey(key); setActiveTab("recipes"); }} className="w-full py-4 border border-dashed border-zinc-800 rounded-2xl text-[9px] font-black uppercase text-zinc-700 flex items-center justify-center gap-2 mt-4">
+              <button onClick={() => { setSelectedMealKey(key); setActiveTab("recipes"); }} className="w-full py-4 border border-dashed border-border rounded-2xl text-[9px] font-black uppercase text-muted-foreground flex items-center justify-center gap-2 mt-4">
                 <Plus size={14} /> Dodaj produkt
               </button>
             </div>
@@ -292,28 +292,28 @@ const Diet = () => {
 
         {/* NAWADNIANIE */}
         <section className={`p-6 rounded-[2.2rem] ${glassStyle} space-y-4`}>
-          <div className="flex justify-between items-center text-blue-400 font-black uppercase text-[10px] tracking-widest"><Droplets size={18}/> Nawodnienie</div>
+          <div className="flex justify-between items-center text-brand font-black uppercase text-[10px] tracking-widest"><Droplets size={18}/> Nawodnienie</div>
           <div className="flex flex-wrap gap-2 justify-center">
             {[...Array(12)].map((_, i) => (
-              <button key={i} onClick={() => setWaterGlasses(i+1)} className={`w-7 h-10 rounded-lg border-2 transition-all ${i < waterGlasses ? 'bg-blue-600 border-blue-400' : 'border-zinc-800'}`} />
+              <button key={i} onClick={() => setWaterGlasses(i+1)} className={`w-7 h-10 rounded-lg border-2 transition-all ${i < waterGlasses ? 'bg-brand border-brand' : 'border-border'}`} />
             ))}
           </div>
         </section>
 
         {/* REKOMENDOWANE PRZEPISY */}
         <section className="space-y-4 pt-4 pb-10">
-           <h2 className="text-xs font-black uppercase text-zinc-600 px-1 italic">Rekomendowane Posiłki</h2>
+           <h2 className="text-xs font-black uppercase text-muted-foreground px-1 italic">Rekomendowane Posiłki</h2>
            <div className="grid gap-4">
               {RECIPES.map(r => (
                 <div key={r.id} onClick={() => { setViewingRecipe(r); setTempWeight(r.weight); }} className={`p-4 rounded-[2rem] ${glassStyle} flex gap-5 items-center active:scale-95 transition-all group`}>
-                   <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-white/10">
+                   <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-foreground/10">
                       <img src={r.image} alt={r.name} className="w-full h-full object-cover" />
                    </div>
                    <div className="flex-1">
                       <h3 className="text-lg font-black uppercase italic tracking-tighter leading-none">{r.name}</h3>
-                      <p className="text-[10px] font-black text-blue-500 mt-1 uppercase">{r.kcal} kcal • {r.time}</p>
+                      <p className="text-[10px] font-black text-brand mt-1 uppercase">{r.kcal} kcal • {r.time}</p>
                    </div>
-                   <ChevronRight className="text-zinc-800" />
+                   <ChevronRight className="text-muted-foreground" />
                 </div>
               ))}
            </div>
@@ -323,42 +323,42 @@ const Diet = () => {
         <AnimatePresence>
           {/* LISTA ZAKUPÓW */}
           {isShoppingListOpen && (
-            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} className="fixed inset-0 z-[1100] bg-black h-screen flex flex-col p-6">
+            <motion.div initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }} className="fixed inset-0 z-[1100] bg-background h-screen flex flex-col p-6">
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-3xl font-black italic uppercase tracking-tighter">Lista Zakupów</h2>
-                <button onClick={() => setIsShoppingListOpen(false)} className="p-4 bg-white/5 rounded-full"><X/></button>
+                <button onClick={() => setIsShoppingListOpen(false)} className="p-4 bg-foreground/5 rounded-full"><X/></button>
               </div>
               <div className="flex-1 overflow-y-auto space-y-3">
                 {shoppingList.length === 0 ? (
                   <div className="text-center py-20 opacity-20 uppercase font-black">Lista jest pusta</div>
                 ) : (
                   shoppingList.map((item, i) => (
-                    <div key={i} className="flex justify-between items-center bg-zinc-900 p-5 rounded-2xl border border-white/5 animate-in slide-in-from-right-4">
-                      <div className="flex items-center gap-3"><CheckCircle2 className="text-blue-500" size={18}/><span className="text-sm font-bold uppercase">{item}</span></div>
-                      <button onClick={() => setShoppingList(s => s.filter(x => x !== item))}><Trash2 size={16} className="text-zinc-700"/></button>
+                    <div key={i} className="flex justify-between items-center bg-card p-5 rounded-2xl border border-foreground/5 animate-in slide-in-from-right-4">
+                      <div className="flex items-center gap-3"><CheckCircle2 className="text-brand" size={18}/><span className="text-sm font-bold uppercase">{item}</span></div>
+                      <button onClick={() => setShoppingList(s => s.filter(x => x !== item))}><Trash2 size={16} className="text-muted-foreground"/></button>
                     </div>
                   ))
                 )}
               </div>
               {shoppingList.length > 0 && (
-                <button onClick={() => setShoppingList([])} className="w-full py-6 bg-red-600 text-white rounded-[2rem] font-black uppercase text-[10px] tracking-widest mt-4">Wyczyść wszystko</button>
+                <button onClick={() => setShoppingList([])} className="w-full py-6 bg-red-600 text-foreground rounded-[2rem] font-black uppercase text-[10px] tracking-widest mt-4">Wyczyść wszystko</button>
               )}
             </motion.div>
           )}
 
           {/* SKANER AI */}
           {activeTab === "scanner" && (
-            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="fixed inset-0 z-[1200] bg-black flex flex-col">
+            <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="fixed inset-0 z-[1200] bg-background flex flex-col">
               <div className="p-6 flex justify-between items-center shrink-0">
                 <h2 className="text-2xl font-black italic uppercase tracking-tighter flex items-center gap-2">
-                  <Sparkles size={20} className="text-blue-500" /> Skaner AI
+                  <Sparkles size={20} className="text-brand" /> Skaner AI
                 </h2>
-                <button onClick={() => { setActiveTab(null); setScanResult(null); }} className="p-4 bg-white/5 rounded-full"><X /></button>
+                <button onClick={() => { setActiveTab(null); setScanResult(null); }} className="p-4 bg-foreground/5 rounded-full"><X /></button>
               </div>
 
               {!scanResult ? (
                 <div className="flex-1 flex flex-col min-h-0">
-                  <div className="relative flex-1 mx-6 rounded-[2.5rem] overflow-hidden border border-white/10">
+                  <div className="relative flex-1 mx-6 rounded-[2.5rem] overflow-hidden border border-foreground/10">
                     <Webcam
                       ref={webcamRef}
                       audio={false}
@@ -367,21 +367,21 @@ const Diet = () => {
                       className="w-full h-full object-cover"
                     />
                     {isAnalyzing && (
-                      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
-                        <Loader2 className="animate-spin text-blue-500" size={48} />
-                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-400 animate-pulse">Analiza AI...</p>
+                      <div className="absolute inset-0 bg-background/70 backdrop-blur-sm flex flex-col items-center justify-center gap-4">
+                        <Loader2 className="animate-spin text-brand" size={48} />
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-brand animate-pulse">Analiza AI...</p>
                       </div>
                     )}
                   </div>
                   <div className="p-6 space-y-3 shrink-0">
                     <div className="flex gap-2 justify-center flex-wrap">
                       {(Object.entries(meals) as [MealKey, Meal][]).map(([key, meal]) => (
-                        <button key={key} onClick={() => setSelectedMealKey(key)} className={`px-3 py-2 rounded-full text-[9px] font-black uppercase transition-all ${selectedMealKey === key ? "bg-white text-black" : "bg-zinc-900 text-zinc-500"}`}>
+                        <button key={key} onClick={() => setSelectedMealKey(key)} className={`px-3 py-2 rounded-full text-[9px] font-black uppercase transition-all ${selectedMealKey === key ? "bg-foreground text-background" : "bg-card text-muted-foreground"}`}>
                           {meal.name}
                         </button>
                       ))}
                     </div>
-                    <button onClick={handleScan} disabled={isAnalyzing} className="w-full py-6 bg-blue-600 rounded-[2rem] font-black uppercase text-xs tracking-widest disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20">
+                    <button onClick={handleScan} disabled={isAnalyzing} className="w-full py-6 bg-brand rounded-[2rem] font-black uppercase text-xs tracking-widest disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-brand/20">
                       <Camera size={18} /> {isAnalyzing ? "Analizuję..." : "Zrób zdjęcie i analizuj"}
                     </button>
                   </div>
@@ -389,7 +389,7 @@ const Diet = () => {
               ) : (
                 <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-20">
                   <div className="text-center space-y-2">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-blue-500">Rozpoznano przez AI</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-brand">Rozpoznano przez AI</p>
                     <h3 className="text-3xl font-black uppercase italic tracking-tighter">{scanResult.name}</h3>
                   </div>
                   <div className="text-center">
@@ -404,21 +404,21 @@ const Diet = () => {
                       { l: "Węgle", v: scanResult.c, bg: "bg-macro-carbs" },
                       { l: "Tłuszcze", v: scanResult.f, bg: "bg-macro-fat" },
                     ].map((m) => (
-                      <div key={m.l} className="bg-white/5 rounded-2xl p-4 text-center border border-white/5">
+                      <div key={m.l} className="bg-foreground/5 rounded-2xl p-4 text-center border border-foreground/5">
                         <div className={`w-2 h-2 rounded-full ${m.bg} mx-auto mb-2`} />
                         <p className="text-lg font-black italic">{Math.round(m.v * (scanWeight / (scanResult.weight || 100)))}g</p>
-                        <p className="text-[8px] font-black uppercase text-zinc-500">{m.l}</p>
+                        <p className="text-[8px] font-black uppercase text-muted-foreground">{m.l}</p>
                       </div>
                     ))}
                   </div>
-                  <div className="bg-white/5 p-6 rounded-[2.5rem] border border-white/10 flex justify-between items-center">
-                    <button onClick={() => setScanWeight((w) => Math.max(1, w - 25))} className="p-4 bg-black rounded-full border border-white/10"><Minus /></button>
+                  <div className="bg-foreground/5 p-6 rounded-[2.5rem] border border-foreground/10 flex justify-between items-center">
+                    <button onClick={() => setScanWeight((w) => Math.max(1, w - 25))} className="p-4 bg-background rounded-full border border-foreground/10"><Minus /></button>
                     <span className="text-3xl font-black italic">{scanWeight}g</span>
-                    <button onClick={() => setScanWeight((w) => w + 25)} className="p-4 bg-black rounded-full border border-white/10"><Plus /></button>
+                    <button onClick={() => setScanWeight((w) => w + 25)} className="p-4 bg-background rounded-full border border-foreground/10"><Plus /></button>
                   </div>
                   <div className="space-y-3">
-                    <button onClick={addScannedMeal} className="w-full py-6 bg-white text-black rounded-[2rem] font-black uppercase text-xs tracking-widest">Dodaj do dziennika</button>
-                    <button onClick={() => setScanResult(null)} className="w-full py-4 text-zinc-600 font-black uppercase text-[10px] tracking-widest">Skanuj ponownie</button>
+                    <button onClick={addScannedMeal} className="w-full py-6 bg-foreground text-background rounded-[2rem] font-black uppercase text-xs tracking-widest">Dodaj do dziennika</button>
+                    <button onClick={() => setScanResult(null)} className="w-full py-4 text-muted-foreground font-black uppercase text-[10px] tracking-widest">Skanuj ponownie</button>
                   </div>
                 </div>
               )}
@@ -427,39 +427,39 @@ const Diet = () => {
 
           {/* DETALE PRZEPISU */}
           {(activeTab === "recipes" || viewingRecipe) && (
-             <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="fixed inset-0 z-[1000] bg-black h-screen flex flex-col overflow-hidden">
-                <div className="p-6 flex justify-between items-center bg-black/50 backdrop-blur-md shrink-0 border-b border-white/10">
+             <motion.div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }} className="fixed inset-0 z-[1000] bg-background h-screen flex flex-col overflow-hidden">
+                <div className="p-6 flex justify-between items-center bg-background/50 backdrop-blur-md shrink-0 border-b border-foreground/10">
                   <h2 className="text-2xl font-black italic uppercase">{viewingRecipe ? "Szczegóły" : "Produkty"}</h2>
-                  <button onClick={() => {setActiveTab(null); setViewingRecipe(null);}} className="p-4 bg-white/5 rounded-full"><X/></button>
+                  <button onClick={() => {setActiveTab(null); setViewingRecipe(null);}} className="p-4 bg-foreground/5 rounded-full"><X/></button>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8 pb-40">
                    {viewingRecipe ? (
                      <div className="space-y-8">
-                        <div className="relative h-72 rounded-[3rem] overflow-hidden border border-white/10">
+                        <div className="relative h-72 rounded-[3rem] overflow-hidden border border-foreground/10">
                           <img src={viewingRecipe.image} className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
                           <div className="absolute bottom-8 left-8">
                              <h3 className="text-4xl font-black uppercase italic tracking-tighter leading-none mb-2">{viewingRecipe.name}</h3>
-                             <p className="text-[10px] font-black uppercase text-blue-500 tracking-widest">{viewingRecipe.micros}</p>
+                             <p className="text-[10px] font-black uppercase text-brand tracking-widest">{viewingRecipe.micros}</p>
                           </div>
                         </div>
 
                         {/* SKŁADNIKI */}
                         <div className="space-y-4">
                            <div className="flex justify-between items-center px-1">
-                              <h4 className="text-xs font-black uppercase tracking-widest text-zinc-500">Składniki</h4>
+                              <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground">Składniki</h4>
                               <button 
                                 onClick={() => addToShoppingList(viewingRecipe.ingredients)}
-                                className="bg-blue-600 px-5 py-2 rounded-full text-[9px] font-black uppercase flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-blue-600/20"
+                                className="bg-brand px-5 py-2 rounded-full text-[9px] font-black uppercase flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-brand/20"
                               >
                                 <ListPlus size={14}/> Dodaj do listy zakupów
                               </button>
                            </div>
                            <div className="grid gap-2">
                               {viewingRecipe.ingredients.map((ing: string, i: number) => (
-                                <div key={i} className="p-4 bg-white/5 rounded-2xl border border-white/5 text-[11px] font-bold uppercase flex items-center gap-3">
-                                   <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" /> {ing}
+                                <div key={i} className="p-4 bg-foreground/5 rounded-2xl border border-foreground/5 text-[11px] font-bold uppercase flex items-center gap-3">
+                                   <div className="w-1.5 h-1.5 bg-brand rounded-full" /> {ing}
                                 </div>
                               ))}
                            </div>
@@ -467,31 +467,31 @@ const Diet = () => {
 
                         {/* INSTRUKCJA */}
                         <div className="space-y-4">
-                          <h4 className="text-xs font-black uppercase tracking-widest text-zinc-500 flex items-center gap-2"><BookOpen size={16}/> Instrukcja ({viewingRecipe.time})</h4>
-                          <p className="p-7 bg-zinc-900 rounded-[2.5rem] text-[13px] italic text-zinc-400 leading-relaxed border border-white/5">{viewingRecipe.steps}</p>
+                          <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2"><BookOpen size={16}/> Instrukcja ({viewingRecipe.time})</h4>
+                          <p className="p-7 bg-card rounded-[2.5rem] text-[13px] italic text-muted-foreground leading-relaxed border border-foreground/5">{viewingRecipe.steps}</p>
                         </div>
 
                         {/* DODAWANIE DO DZIENNIKA */}
-                        <div className="bg-white/5 p-8 rounded-[3rem] border border-white/10 space-y-8">
+                        <div className="bg-foreground/5 p-8 rounded-[3rem] border border-foreground/10 space-y-8">
                           <div className="flex justify-between items-center px-6">
-                            <button onClick={() => setTempWeight(w => Math.max(1, w-50))} className="p-5 bg-black rounded-full border border-white/10"><Minus/></button>
+                            <button onClick={() => setTempWeight(w => Math.max(1, w-50))} className="p-5 bg-background rounded-full border border-foreground/10"><Minus/></button>
                             <span className="text-5xl font-black italic">{tempWeight}g</span>
-                            <button onClick={() => setTempWeight(w => w+50)} className="p-5 bg-black rounded-full border border-white/10"><Plus/></button>
+                            <button onClick={() => setTempWeight(w => w+50)} className="p-5 bg-background rounded-full border border-foreground/10"><Plus/></button>
                           </div>
                           <button onClick={() => {
                             if (!viewingRecipe) return;
                             const final = calculateMacros(viewingRecipe, tempWeight);
                             setMeals((p) => ({...p, [selectedMealKey]: {...p[selectedMealKey], items: [...p[selectedMealKey].items, {...final, id: Date.now()}]}} as DailyLog['meals']));
                             setViewingRecipe(null); setActiveTab(null); toast({title: "Zapisano w dzienniku"});
-                          }} className="w-full py-6 bg-white text-black rounded-[2rem] font-black uppercase text-xs tracking-widest">Dodaj do dziennika</button>
+                          }} className="w-full py-6 bg-foreground text-background rounded-[2rem] font-black uppercase text-xs tracking-widest">Dodaj do dziennika</button>
                         </div>
                      </div>
                    ) : activeTab === "recipes" && (
                      <div className="space-y-4">
                         {RECIPES.map(r => (
-                          <div key={r.id} onClick={() => { setViewingRecipe(r); setTempWeight(r.weight); }} className="p-6 bg-zinc-900 rounded-3xl border border-white/5 flex justify-between items-center active:scale-95 transition-all">
+                          <div key={r.id} onClick={() => { setViewingRecipe(r); setTempWeight(r.weight); }} className="p-6 bg-card rounded-3xl border border-foreground/5 flex justify-between items-center active:scale-95 transition-all">
                             <p className="font-black uppercase italic tracking-tighter">{r.name}</p>
-                            <Plus size={18} className="text-blue-600" />
+                            <Plus size={18} className="text-brand" />
                           </div>
                         ))}
                      </div>

@@ -44,7 +44,11 @@ Cel: jeden spójny system wizualny zgodny z brandbookiem.
 - [~] 2.5 Przegląd typografii i odstępów — system już spójny; pełny audyt do zrobienia
 - [~] 2.6 Stany puste/ładowania (dodane: `EmptyChart`, stany skanera) — do ujednolicenia globalnie
 - [x] 2.7 Sprzątanie: README przepisany, `ngrok` usunięty, martwy `Index.tsx` skasowany
-- [ ] 2.8 Dług: pełne dotypowanie (usunięcie `any` z kodu Lovable) — przenieść do FAZY 4
+- [x] 2.8 Pełne dotypowanie — usunięto WSZYSTKIE `any` (lint 56 błędów → 0)
+- [x] 2.9 Tokenizacja całego UI (czerń/biel/zinc/blue → tokeny) — kolory jednolite
+- [x] 2.10 Działający tryb jasny/ciemny (next-themes, przełącznik w Profilu, dark-first)
+- [x] 2.11 Bilans energii: spalone na treningu kcal powiększają budżet dnia (MET/ACSM)
+- [x] 2.12 Sprawne, motywowane paski przewijania + brak blokad scrolla po modalach
 
 ---
 

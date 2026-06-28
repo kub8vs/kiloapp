@@ -5,16 +5,18 @@ import {
   Scale, Ruler, Target, Activity, Trash2, Settings,
   Zap, UserCircle, Watch, ChevronRight, Smartphone, 
   Bluetooth, BarChart3, TrendingUp, Heart,
-  Brain, Dna, ShieldCheck, Loader2, Info, Activity as ActivityIcon
+  Brain, Dna, ShieldCheck, Loader2, Info, Activity as ActivityIcon, Sun, Moon
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import * as Store from "@/lib/user-store";
 import type { HistoryEntry } from "@/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTheme } from "next-themes";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
 
 const Profile = () => {
   const navigate = useNavigate();
+  const { theme, setTheme } = useTheme();
   const [profile, setProfile] = useState<Store.UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -38,18 +40,19 @@ const Profile = () => {
 
   useEffect(() => {
     document.body.style.overflow = editingField ? 'hidden' : 'auto';
+    return () => { document.body.style.overflow = 'auto'; };
   }, [editingField]);
 
   if (loading || !profile) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6">
         <div className="relative">
-          <Loader2 className="text-blue-600 animate-spin" size={48} />
-          <div className="absolute inset-0 blur-xl bg-blue-600/20 animate-pulse" />
+          <Loader2 className="text-brand animate-spin" size={48} />
+          <div className="absolute inset-0 blur-xl bg-brand/20 animate-pulse" />
         </div>
         <div className="text-center">
-          <p className="text-[10px] font-black text-blue-500 uppercase tracking-[0.5em] mb-2">System Booting</p>
-          <p className="text-zinc-500 text-[8px] font-bold uppercase tracking-widest">Elite Biometric Interface v4.0</p>
+          <p className="text-[10px] font-black text-brand uppercase tracking-[0.5em] mb-2">System Booting</p>
+          <p className="text-muted-foreground text-[8px] font-bold uppercase tracking-widest">Elite Biometric Interface v4.0</p>
         </div>
       </div>
     );
@@ -76,8 +79,8 @@ const Profile = () => {
 
   // --- KOMPONENTY WYKRESÓW (realne dane z historii i logu wagi) ---
   const EmptyChart = ({ text }: { text: string }) => (
-    <div className="h-32 w-full flex items-center justify-center border border-dashed border-white/10 rounded-2xl">
-      <p className="text-[10px] text-zinc-600 uppercase font-bold italic text-center px-6">{text}</p>
+    <div className="h-32 w-full flex items-center justify-center border border-dashed border-foreground/10 rounded-2xl">
+      <p className="text-[10px] text-muted-foreground uppercase font-bold italic text-center px-6">{text}</p>
     </div>
   );
 
@@ -97,7 +100,7 @@ const Profile = () => {
         {strengthVols.map((v, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-2">
             <div
-              className="w-full bg-gradient-to-t from-blue-700 to-blue-400 rounded-t-md shadow-[0_0_10px_rgba(37,99,235,0.3)] transition-all duration-1000"
+              className="w-full bg-gradient-to-t from-brand to-brand rounded-t-md shadow-[0_0_10px_rgba(37,99,235,0.3)] transition-all duration-1000"
               style={{ height: `${Math.max(8, (v / max) * 100)}%` }}
             />
           </div>
@@ -117,9 +120,9 @@ const Profile = () => {
       <div className="h-32 w-full flex items-end justify-between gap-3 px-4">
         {points.map((p, i) => (
           <div key={i} className="flex-1 flex flex-col items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-zinc-400 mb-1" />
+            <div className="w-2 h-2 rounded-full bg-muted-foreground mb-1" />
             <div
-              className="w-full bg-zinc-800 rounded-t-xl border-x border-t border-white/5 transition-all duration-1000"
+              className="w-full bg-secondary rounded-t-xl border-x border-t border-foreground/5 transition-all duration-1000"
               style={{ height: `${40 + ((p.weight - min) / range) * 55}%` }}
             />
           </div>
@@ -130,59 +133,59 @@ const Profile = () => {
 
   return (
     <AppLayout>
-      <div className="dark px-5 pt-12 pb-32 min-h-screen bg-black text-white">
+      <div className="dark px-5 pt-12 pb-32 min-h-screen bg-background text-foreground">
         
         {/* HEADER */}
         <header className="mb-10 flex justify-between items-start">
           <div>
             <h1 className="text-4xl font-black uppercase italic tracking-tighter leading-none">PROFIL</h1>
-            <p className="text-[10px] font-bold text-blue-500 uppercase tracking-[0.2em] mt-2">Personal Elite Dashboard</p>
+            <p className="text-[10px] font-bold text-brand uppercase tracking-[0.2em] mt-2">Personal Elite Dashboard</p>
           </div>
         </header>
 
         {/* AVATAR CARD */}
-        <section className="p-8 rounded-[3rem] bg-zinc-900 border border-white/10 flex flex-col items-center gap-4 text-center mb-8 shadow-2xl">
+        <section className="p-8 rounded-[3rem] bg-card border border-foreground/10 flex flex-col items-center gap-4 text-center mb-8 shadow-2xl">
           <div className="relative group">
-            <div className="w-32 h-32 rounded-[2.5rem] bg-zinc-800 flex items-center justify-center border-4 border-blue-600 overflow-hidden shadow-2xl transition-transform group-active:scale-95">
-               {profile.avatar ? <img src={profile.avatar} className="w-full h-full object-cover" /> : <UserCircle size={64} className="text-zinc-700" />}
+            <div className="w-32 h-32 rounded-[2.5rem] bg-secondary flex items-center justify-center border-4 border-brand overflow-hidden shadow-2xl transition-transform group-active:scale-95">
+               {profile.avatar ? <img src={profile.avatar} className="w-full h-full object-cover" /> : <UserCircle size={64} className="text-muted-foreground" />}
             </div>
-            <div className="absolute -bottom-2 -right-2 p-3 bg-blue-600 rounded-2xl text-white shadow-lg border-4 border-zinc-900 animate-bounce-slow">
+            <div className="absolute -bottom-2 -right-2 p-3 bg-brand rounded-2xl text-foreground shadow-lg border-4 border-border animate-bounce-slow">
               <Zap size={16} fill="white" />
             </div>
           </div>
           <div>
             <h2 className="text-3xl font-black uppercase italic leading-tight">{profile.name}</h2>
-            <p className="text-[10px] font-black text-zinc-500 uppercase tracking-widest mt-1">Kilo Elite Member</p>
+            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mt-1">Kilo Elite Member</p>
           </div>
         </section>
 
         {/* --- SYSTEM INTELLIGENCE SECTION --- */}
         <div className="mb-8 space-y-4">
-          <h3 className="text-xs font-black uppercase text-zinc-500 tracking-widest px-2">Data Intelligence</h3>
+          <h3 className="text-xs font-black uppercase text-muted-foreground tracking-widest px-2">Data Intelligence</h3>
           <Drawer>
             <DrawerTrigger asChild>
               <button className="relative w-full group active:scale-[0.98] transition-all">
-                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition" />
-                <div className="relative w-full p-6 bg-zinc-900 rounded-[2.5rem] border border-white/10 flex items-center justify-between">
+                <div className="absolute -inset-1 bg-gradient-to-r from-brand to-indigo-600 rounded-[2.5rem] blur opacity-20 group-hover:opacity-40 transition" />
+                <div className="relative w-full p-6 bg-card rounded-[2.5rem] border border-foreground/10 flex items-center justify-between">
                   <div className="flex items-center gap-4 text-left">
-                    <div className="p-4 bg-blue-600 rounded-2xl shadow-xl shadow-blue-600/20">
-                      <Brain size={24} className="text-white" />
+                    <div className="p-4 bg-brand rounded-2xl shadow-xl shadow-brand/20">
+                      <Brain size={24} className="text-foreground" />
                     </div>
                     <div>
-                      <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest">Neural Analysis</p>
+                      <p className="text-[9px] font-black text-brand uppercase tracking-widest">Neural Analysis</p>
                       <p className="text-xl font-black italic uppercase leading-none mt-1">System Reports</p>
                     </div>
                   </div>
-                  <ChevronRight size={24} className="text-zinc-700" />
+                  <ChevronRight size={24} className="text-muted-foreground" />
                 </div>
               </button>
             </DrawerTrigger>
             
-            <DrawerContent className="bg-zinc-950 border-t-zinc-800 text-white h-[95vh]">
+            <DrawerContent className="bg-card border-t-border text-foreground h-[95vh]">
               <div className="mx-auto w-full max-w-md flex flex-col h-full overflow-hidden">
-                <DrawerHeader className="border-b border-white/5 pb-4">
+                <DrawerHeader className="border-b border-foreground/5 pb-4">
                   <DrawerTitle className="text-3xl font-black uppercase italic text-center tracking-tighter">Bio-Intelligence</DrawerTitle>
-                  <DrawerDescription className="text-center text-zinc-500 font-bold uppercase text-[9px] tracking-[0.4em]">Integrated Performance Analytics</DrawerDescription>
+                  <DrawerDescription className="text-center text-muted-foreground font-bold uppercase text-[9px] tracking-[0.4em]">Integrated Performance Analytics</DrawerDescription>
                 </DrawerHeader>
                 
                 <div className="flex-1 overflow-y-auto px-6 py-6 space-y-12 pb-20 custom-scrollbar">
@@ -191,16 +194,16 @@ const Profile = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between items-end">
                       <div className="flex items-center gap-2">
-                        <TrendingUp className="text-blue-500" size={18} />
+                        <TrendingUp className="text-brand" size={18} />
                         <h4 className="text-xs font-black uppercase italic tracking-widest">Postępy Siłowe</h4>
                       </div>
-                      <span className="text-[10px] font-black text-blue-500 bg-blue-500/10 px-2 py-1 rounded-md">{strengthDelta !== null ? `${strengthDelta > 0 ? '+' : ''}${strengthDelta}%` : '—'}</span>
+                      <span className="text-[10px] font-black text-brand bg-brand/10 px-2 py-1 rounded-md">{strengthDelta !== null ? `${strengthDelta > 0 ? '+' : ''}${strengthDelta}%` : '—'}</span>
                     </div>
-                    <div className="p-5 bg-zinc-900 rounded-[2rem] border border-white/5">
+                    <div className="p-5 bg-card rounded-[2rem] border border-foreground/5">
                       <StrengthChart />
                     </div>
-                    <p className="text-[10px] text-zinc-500 leading-relaxed font-bold uppercase">
-                      <ShieldCheck className="inline mr-1 text-blue-500" size={12} /> Wzrost objętości treningowej sugeruje optymalną adaptację CNS.
+                    <p className="text-[10px] text-muted-foreground leading-relaxed font-bold uppercase">
+                      <ShieldCheck className="inline mr-1 text-brand" size={12} /> Wzrost objętości treningowej sugeruje optymalną adaptację CNS.
                     </p>
                   </div>
 
@@ -211,12 +214,12 @@ const Profile = () => {
                         <Heart className="text-emerald-500" size={18} />
                         <h4 className="text-xs font-black uppercase italic tracking-widest">Tętno Spoczynkowe</h4>
                       </div>
-                      <span className="text-[10px] font-black text-zinc-500 bg-white/5 px-2 py-1 rounded-md">BRAK DANYCH</span>
+                      <span className="text-[10px] font-black text-muted-foreground bg-foreground/5 px-2 py-1 rounded-md">BRAK DANYCH</span>
                     </div>
-                    <div className="p-5 bg-zinc-900 rounded-[2rem] border border-white/5">
+                    <div className="p-5 bg-card rounded-[2rem] border border-foreground/5">
                       <EmptyChart text="Połącz zegarek, aby śledzić tętno spoczynkowe" />
                     </div>
-                    <p className="text-[10px] text-zinc-500 leading-relaxed font-bold uppercase">
+                    <p className="text-[10px] text-muted-foreground leading-relaxed font-bold uppercase">
                       <Info className="inline mr-1 text-emerald-500" size={12} /> Dane tętna pojawią się po połączeniu urządzenia.
                     </p>
                   </div>
@@ -225,22 +228,22 @@ const Profile = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between items-end">
                       <div className="flex items-center gap-2">
-                        <Scale className="text-zinc-100" size={18} />
+                        <Scale className="text-foreground" size={18} />
                         <h4 className="text-xs font-black uppercase italic tracking-widest">Masa Ciała (Kg)</h4>
                       </div>
-                      <span className="text-[10px] font-black text-zinc-100 bg-white/10 px-2 py-1 rounded-md">{weightDelta === null ? 'TREND —' : weightDelta <= 0 ? `TREND ↓ ${weightDelta}kg` : `TREND ↑ +${weightDelta}kg`}</span>
+                      <span className="text-[10px] font-black text-foreground bg-foreground/10 px-2 py-1 rounded-md">{weightDelta === null ? 'TREND —' : weightDelta <= 0 ? `TREND ↓ ${weightDelta}kg` : `TREND ↑ +${weightDelta}kg`}</span>
                     </div>
-                    <div className="p-5 bg-zinc-900 rounded-[2rem] border border-white/5">
+                    <div className="p-5 bg-card rounded-[2rem] border border-foreground/5">
                       <WeightChart />
                     </div>
-                    <p className="text-[10px] text-zinc-500 leading-relaxed font-bold uppercase text-center">
+                    <p className="text-[10px] text-muted-foreground leading-relaxed font-bold uppercase text-center">
                       Analiza składu ciała sugeruje efektywną rekompozycję.
                     </p>
                   </div>
 
                 </div>
                 <DrawerClose asChild>
-                  <button className="p-6 text-zinc-600 font-black uppercase text-[10px] tracking-widest hover:text-white transition-colors">Zamknij Analizy</button>
+                  <button className="p-6 text-muted-foreground font-black uppercase text-[10px] tracking-widest hover:text-foreground transition-colors">Zamknij Analizy</button>
                 </DrawerClose>
               </div>
             </DrawerContent>
@@ -249,28 +252,28 @@ const Profile = () => {
 
         {/* --- INTEGRATIONS --- */}
         <div className="mb-8 space-y-4">
-          <h3 className="text-xs font-black uppercase text-zinc-500 tracking-widest px-2">Connect Devices</h3>
+          <h3 className="text-xs font-black uppercase text-muted-foreground tracking-widest px-2">Connect Devices</h3>
           <Drawer>
             <DrawerTrigger asChild>
-              <button className="w-full p-6 bg-zinc-900 rounded-[2.5rem] border border-white/10 flex items-center justify-between active:scale-[0.98] transition-all">
+              <button className="w-full p-6 bg-card rounded-[2.5rem] border border-foreground/10 flex items-center justify-between active:scale-[0.98] transition-all">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-blue-600/10 rounded-2xl"><Watch className="text-blue-500" /></div>
+                  <div className="p-3 bg-brand/10 rounded-2xl"><Watch className="text-brand" /></div>
                   <div className="text-left">
-                    <p className="text-[9px] font-black text-zinc-500 uppercase">Synchronizacja</p>
+                    <p className="text-[9px] font-black text-muted-foreground uppercase">Synchronizacja</p>
                     <p className="text-lg font-black italic uppercase">Połącz zegarek</p>
                   </div>
                 </div>
-                <ChevronRight size={20} className="text-zinc-700" />
+                <ChevronRight size={20} className="text-muted-foreground" />
               </button>
             </DrawerTrigger>
-            <DrawerContent className="bg-zinc-950 text-white">
+            <DrawerContent className="bg-card text-foreground">
                <div className="mx-auto w-full max-w-sm pb-10">
                 <DrawerHeader><DrawerTitle className="text-2xl font-black uppercase italic text-center">Select Wearable</DrawerTitle></DrawerHeader>
                 <div className="p-4 space-y-3">
                   {[{ name: 'Apple Watch', icon: <Smartphone /> }, { name: 'Samsung Health', icon: <Watch /> }, { name: 'Garmin Connect', icon: <Bluetooth /> }].map((d) => (
-                    <div key={d.name} className="w-full p-6 bg-zinc-900 rounded-3xl border border-white/5 flex items-center justify-between font-black uppercase italic text-sm opacity-70">
+                    <div key={d.name} className="w-full p-6 bg-card rounded-3xl border border-foreground/5 flex items-center justify-between font-black uppercase italic text-sm opacity-70">
                       <div className="flex items-center gap-4">{d.icon} {d.name}</div>
-                      <div className="text-[10px] text-zinc-500 border border-white/10 px-3 py-1 rounded-full">Wkrótce</div>
+                      <div className="text-[10px] text-muted-foreground border border-foreground/10 px-3 py-1 rounded-full">Wkrótce</div>
                     </div>
                   ))}
                 </div>
@@ -281,26 +284,45 @@ const Profile = () => {
 
         {/* --- PHYSICAL PARAMETERS --- */}
         <div className="space-y-4">
-          <h3 className="text-xs font-black uppercase text-zinc-500 tracking-widest px-2">Parametry</h3>
+          <h3 className="text-xs font-black uppercase text-muted-foreground tracking-widest px-2">Parametry</h3>
           <div className="grid grid-cols-2 gap-4">
-            <button onClick={() => startEditing('weight', profile.weight)} className="p-6 bg-zinc-900 rounded-[2.5rem] border border-white/10 text-left flex flex-col gap-2">
-              <Scale size={20} className="text-blue-500" />
-              <p className="text-[10px] font-black text-zinc-500 uppercase">Waga</p>
+            <button onClick={() => startEditing('weight', profile.weight)} className="p-6 bg-card rounded-[2.5rem] border border-foreground/10 text-left flex flex-col gap-2">
+              <Scale size={20} className="text-brand" />
+              <p className="text-[10px] font-black text-muted-foreground uppercase">Waga</p>
               <p className="text-2xl font-black italic">{profile.weight}kg</p>
             </button>
-            <button onClick={() => startEditing('height', profile.height)} className="p-6 bg-zinc-900 rounded-[2.5rem] border border-white/10 text-left flex flex-col gap-2">
-              <Ruler size={20} className="text-blue-500" />
-              <p className="text-[10px] font-black text-zinc-500 uppercase">Wzrost</p>
+            <button onClick={() => startEditing('height', profile.height)} className="p-6 bg-card rounded-[2.5rem] border border-foreground/10 text-left flex flex-col gap-2">
+              <Ruler size={20} className="text-brand" />
+              <p className="text-[10px] font-black text-muted-foreground uppercase">Wzrost</p>
               <p className="text-2xl font-black italic">{profile.height}cm</p>
+            </button>
+          </div>
+        </div>
+
+        {/* --- MOTYW --- */}
+        <div className="mt-8 space-y-4">
+          <h3 className="text-xs font-black uppercase text-muted-foreground tracking-widest px-2">Wygląd</h3>
+          <div className="p-2 bg-card rounded-[2rem] border border-foreground/10 flex gap-2">
+            <button
+              onClick={() => setTheme('dark')}
+              className={`flex-1 py-4 rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all ${theme === 'dark' ? 'bg-foreground text-background' : 'text-muted-foreground'}`}
+            >
+              <Moon size={16} /> Ciemny
+            </button>
+            <button
+              onClick={() => setTheme('light')}
+              className={`flex-1 py-4 rounded-[1.5rem] font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 transition-all ${theme === 'light' ? 'bg-foreground text-background' : 'text-muted-foreground'}`}
+            >
+              <Sun size={16} /> Jasny
             </button>
           </div>
         </div>
 
         {/* --- LOGOUT & RESET --- */}
         <div className="mt-12 space-y-4">
-          <button onClick={handleLogout} className="w-full p-6 bg-zinc-900 rounded-[2.5rem] border border-white/10 flex items-center justify-between active:scale-[0.98] transition-all">
+          <button onClick={handleLogout} className="w-full p-6 bg-card rounded-[2.5rem] border border-foreground/10 flex items-center justify-between active:scale-[0.98] transition-all">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-zinc-800 rounded-2xl"><LogOut className="text-zinc-500" /></div>
+              <div className="p-3 bg-secondary rounded-2xl"><LogOut className="text-muted-foreground" /></div>
               <span className="font-black uppercase italic text-sm">Wyloguj Się</span>
             </div>
           </button>
@@ -315,17 +337,17 @@ const Profile = () => {
         {/* MODAL EDYCJI */}
         <AnimatePresence>
           {editingField && (
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="fixed inset-0 z-[600] bg-black p-6 flex flex-col overflow-hidden text-white">
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="fixed inset-0 z-[600] bg-background p-6 flex flex-col overflow-hidden text-foreground">
               <header className="flex justify-between items-center mb-12">
                 <button onClick={() => setEditingField(null)}><ChevronLeft size={32} /></button>
                 <h2 className="font-black uppercase italic tracking-tighter text-xl">Edytuj</h2>
-                <button onClick={saveEdit} className="px-5 py-2 bg-blue-600 rounded-2xl text-white font-black uppercase text-xs">Zapisz</button>
+                <button onClick={saveEdit} className="px-5 py-2 bg-brand rounded-2xl text-foreground font-black uppercase text-xs">Zapisz</button>
               </header>
               <div className="flex-1 flex flex-col items-center justify-center">
                 {(editingField === 'weight' || editingField === 'height') && (
                   <div className="w-full flex flex-col items-center">
-                    <input type="number" className="bg-transparent text-8xl font-black italic text-center outline-none border-b-4 border-blue-600 pb-2 w-full text-white tabular-nums" value={tempValue} onChange={(e) => setTempValue(e.target.value)} autoFocus />
-                    <p className="text-xl font-black uppercase text-zinc-500 mt-6 italic">{editingField === 'weight' ? 'Kilogramy (kg)' : 'Centymetry (cm)'}</p>
+                    <input type="number" className="bg-transparent text-8xl font-black italic text-center outline-none border-b-4 border-brand pb-2 w-full text-foreground tabular-nums" value={tempValue} onChange={(e) => setTempValue(e.target.value)} autoFocus />
+                    <p className="text-xl font-black uppercase text-muted-foreground mt-6 italic">{editingField === 'weight' ? 'Kilogramy (kg)' : 'Centymetry (cm)'}</p>
                   </div>
                 )}
               </div>

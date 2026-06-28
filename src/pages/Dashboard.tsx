@@ -212,34 +212,34 @@ const Dashboard = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[1000] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6"
+              className="fixed inset-0 z-[1000] bg-background/80 backdrop-blur-sm flex items-center justify-center p-6"
             >
               <motion.div 
                 key={currentStep}
                 initial={{ opacity: 0, y: 20, scale: 0.9 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
-                className="bg-zinc-900 border border-blue-600/50 p-8 rounded-[2.5rem] w-full max-w-sm relative shadow-[0_0_50px_rgba(37,99,235,0.15)]"
+                className="bg-card border border-brand/50 p-8 rounded-[2.5rem] w-full max-w-sm relative shadow-[0_0_50px_rgba(37,99,235,0.15)]"
               >
                 {/* Arrow */}
-                <div className={`absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-zinc-900 border-l border-t border-blue-600/50 rotate-45 ${tutorialSteps[currentStep].pos === 'top' ? '-bottom-3' : '-top-3'}`} />
+                <div className={`absolute left-1/2 -translate-x-1/2 w-6 h-6 bg-card border-l border-t border-brand/50 rotate-45 ${tutorialSteps[currentStep].pos === 'top' ? '-bottom-3' : '-top-3'}`} />
                 
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-[10px] font-black italic">
+                    <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-[10px] font-black italic">
                       {currentStep + 1}
                     </div>
                     <h4 className="text-xl font-black uppercase italic tracking-tighter">
                       {tutorialSteps[currentStep].title}
                     </h4>
                   </div>
-                  <p className="text-sm font-bold text-zinc-400 uppercase italic leading-relaxed">
+                  <p className="text-sm font-bold text-muted-foreground uppercase italic leading-relaxed">
                     {tutorialSteps[currentStep].desc}
                   </p>
                   <div className="flex justify-between items-center pt-6">
-                    <button onClick={finishTutorial} className="text-[10px] font-black uppercase text-zinc-600 tracking-widest">Pomiń</button>
+                    <button onClick={finishTutorial} className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Pomiń</button>
                     <button 
                       onClick={handleNextTutorial}
-                      className="px-6 py-3 bg-blue-600 rounded-2xl text-white font-black uppercase italic text-xs flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-blue-600/30"
+                      className="px-6 py-3 bg-brand rounded-2xl text-foreground font-black uppercase italic text-xs flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-brand/30"
                     >
                       {currentStep === tutorialSteps.length - 1 ? "Start" : "Dalej"}
                       <ArrowRight size={14} />
@@ -252,7 +252,7 @@ const Dashboard = () => {
         </AnimatePresence>
 
         <div className="px-5 pt-12 pb-24 space-y-6">
-          <header className={`flex justify-between items-start transition-all ${showTutorial && currentStep === 0 ? 'relative z-[1001] bg-black p-4 rounded-3xl' : ''}`}>
+          <header className={`flex justify-between items-start transition-all ${showTutorial && currentStep === 0 ? 'relative z-[1001] bg-background p-4 rounded-3xl' : ''}`}>
             <div>
               <p className="text-muted-foreground text-sm uppercase font-bold">
                 {selectedDate.toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric' })}
@@ -273,7 +273,7 @@ const Dashboard = () => {
             })}
           </div>
 
-          <div onClick={() => { setStepsInput(String(stats.steps || 0)); setEditingSteps(true); }} className={`kilo-card bg-white/5 border border-white/10 flex items-center justify-between transition-all cursor-pointer active:scale-[0.98] ${showTutorial && currentStep === 1 ? 'relative z-[1001] bg-zinc-900 ring-2 ring-blue-600' : ''}`}>
+          <div onClick={() => { setStepsInput(String(stats.steps || 0)); setEditingSteps(true); }} className={`kilo-card bg-foreground/5 border border-foreground/10 flex items-center justify-between transition-all cursor-pointer active:scale-[0.98] ${showTutorial && currentStep === 1 ? 'relative z-[1001] bg-card ring-2 ring-brand' : ''}`}>
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-foreground/10 flex items-center justify-center"><Footprints size={24} /></div>
               <div>
@@ -292,7 +292,7 @@ const Dashboard = () => {
             </ProgressRing>
           </div>
 
-          <div className={`kilo-card bg-white/5 border border-white/10 transition-all ${showTutorial && currentStep === 2 ? 'relative z-[1001] bg-zinc-900 ring-2 ring-blue-600' : ''}`}>
+          <div className={`kilo-card bg-foreground/5 border border-foreground/10 transition-all ${showTutorial && currentStep === 2 ? 'relative z-[1001] bg-card ring-2 ring-brand' : ''}`}>
             <h3 className="font-black uppercase italic tracking-tighter mb-4 text-sm">Twoje Makro</h3>
             <div className="flex justify-around">
               {[
@@ -317,7 +317,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className="kilo-card bg-white/5 border border-white/10">
+          <div className="kilo-card bg-foreground/5 border border-foreground/10">
             <h3 className="font-black uppercase italic tracking-tighter mb-4 text-sm">Bilans Energii</h3>
             <div className="grid grid-cols-3 gap-3 text-center">
               <div>
@@ -335,7 +335,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          <div className={`grid grid-cols-4 gap-3 transition-all ${showTutorial && currentStep === 3 ? 'relative z-[1001] bg-zinc-900 p-2 rounded-3xl ring-2 ring-blue-600' : ''}`}>
+          <div className={`grid grid-cols-4 gap-3 transition-all ${showTutorial && currentStep === 3 ? 'relative z-[1001] bg-card p-2 rounded-3xl ring-2 ring-brand' : ''}`}>
             {[ 
               { i: ScanLine, l: 'Skanuj', p: '/diet?scan=1' },
               { i: Dumbbell, l: 'Trening', p: '/workout' }, 
@@ -343,14 +343,14 @@ const Dashboard = () => {
               { i: ChefHat, l: 'Przepisy', p: '/diet' } 
             ].map(a => (
               <button key={a.l} onClick={() => navigate(a.p)} className="flex flex-col items-center gap-2">
-                <div className="w-14 h-14 rounded-2xl bg-foreground/5 border border-white/5 flex items-center justify-center"><a.i size={24} /></div>
+                <div className="w-14 h-14 rounded-2xl bg-foreground/5 border border-foreground/5 flex items-center justify-center"><a.i size={24} /></div>
                 <span className="text-[10px] text-muted-foreground uppercase font-black">{a.l}</span>
               </button>
             ))}
           </div>
 
-          <section className={`space-y-4 transition-all ${showTutorial && currentStep === 4 ? 'relative z-[1001] bg-zinc-900 p-4 rounded-[2.5rem] ring-2 ring-blue-600' : ''}`}>
-            <h3 className="text-xs font-black uppercase text-zinc-500 tracking-widest px-1 flex items-center gap-2">
+          <section className={`space-y-4 transition-all ${showTutorial && currentStep === 4 ? 'relative z-[1001] bg-card p-4 rounded-[2.5rem] ring-2 ring-brand' : ''}`}>
+            <h3 className="text-xs font-black uppercase text-muted-foreground tracking-widest px-1 flex items-center gap-2">
               <BrainCircuit size={14} /> AI Elite Trainers
             </h3>
             <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
@@ -358,14 +358,14 @@ const Dashboard = () => {
                 <button 
                   key={t.id}
                   onClick={() => { setSelectedTrainer(t); setChat([]); }}
-                  className="flex-shrink-0 bg-white/5 border border-white/10 p-4 rounded-[2rem] flex items-center gap-3 active:scale-95 transition-all"
+                  className="flex-shrink-0 bg-foreground/5 border border-foreground/10 p-4 rounded-[2rem] flex items-center gap-3 active:scale-95 transition-all"
                 >
                   <div className="w-10 h-10 rounded-full bg-foreground/10 flex items-center justify-center text-primary">
                     <Zap size={20} fill="currentColor" />
                   </div>
                   <div className="text-left">
                     <p className="text-xs font-black uppercase italic leading-none">{t.name}</p>
-                    <p className="text-[8px] font-bold text-zinc-600 uppercase tracking-tighter mt-1">{t.role}</p>
+                    <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter mt-1">{t.role}</p>
                   </div>
                 </button>
               ))}
@@ -380,7 +380,7 @@ const Dashboard = () => {
                   key={idx} 
                   onClick={() => setSelectedRecipe(recipe)} 
                   whileTap={{ scale: 0.95 }} 
-                  className="min-w-[200px] bg-white/5 border border-white/10 rounded-[2rem] p-5 space-y-3 cursor-pointer"
+                  className="min-w-[200px] bg-foreground/5 border border-foreground/10 rounded-[2rem] p-5 space-y-3 cursor-pointer"
                 >
                   <div className="text-3xl">{recipe.icon}</div>
                   <h4 className="font-bold text-xs leading-tight h-8 line-clamp-2">{recipe.title}</h4>
@@ -393,13 +393,13 @@ const Dashboard = () => {
             </div>
           </section>
 
-          <div className={`kilo-card bg-black/20 border border-white/5 transition-all ${showTutorial && currentStep === 5 ? 'relative z-[1001] bg-zinc-900 ring-2 ring-blue-600' : ''}`}>
+          <div className={`kilo-card bg-background/20 border border-foreground/5 transition-all ${showTutorial && currentStep === 5 ? 'relative z-[1001] bg-card ring-2 ring-brand' : ''}`}>
             <div className="flex items-center gap-2 mb-4">
               <TrendingUp size={18} className="text-primary" />
               <h3 className="font-black uppercase italic text-sm">Progres Siłowy</h3>
             </div>
             {strengthVols.length === 0 ? (
-              <div className="h-40 flex items-center justify-center border border-dashed border-white/10 rounded-2xl">
+              <div className="h-40 flex items-center justify-center border border-dashed border-foreground/10 rounded-2xl">
                 <p className="text-[10px] text-muted-foreground uppercase font-bold italic text-center px-6">
                   Dodaj swój pierwszy trening,<br/>aby zobaczyć wykres progresu
                 </p>
@@ -434,7 +434,7 @@ const Dashboard = () => {
             >
               <div className="relative h-64">
                 <img src={selectedRecipe.image} className="w-full h-full object-cover" alt="" />
-                <button onClick={() => setSelectedRecipe(null)} className="absolute top-6 left-6 p-3 bg-black/50 rounded-full text-white">
+                <button onClick={() => setSelectedRecipe(null)} className="absolute top-6 left-6 p-3 bg-background/50 rounded-full text-foreground">
                   <X size={24} />
                 </button>
               </div>
@@ -449,7 +449,7 @@ const Dashboard = () => {
                 <div className="space-y-4">
                   <h3 className="font-black uppercase text-xs italic">Składniki</h3>
                   {selectedRecipe.ingredients.map((ing, i: number) => (
-                    <div key={i} className="flex justify-between p-4 bg-white/5 rounded-2xl text-xs font-bold">
+                    <div key={i} className="flex justify-between p-4 bg-foreground/5 rounded-2xl text-xs font-bold">
                       <span>{ing.name}</span>
                       <span className="text-primary">{ing.amount} {ing.unit}</span>
                     </div>
@@ -479,15 +479,15 @@ const Dashboard = () => {
             >
               <header className="flex justify-between items-center mb-8">
                 <div className="flex items-center gap-4">
-                  <button onClick={() => setSelectedTrainer(null)} className="p-2 bg-white/5 rounded-full text-zinc-500 hover:text-white transition-colors">
+                  <button onClick={() => setSelectedTrainer(null)} className="p-2 bg-foreground/5 rounded-full text-muted-foreground hover:text-foreground transition-colors">
                     <ChevronLeft size={24} />
                   </button>
                   <div>
                     <h2 className="font-black uppercase italic text-xl leading-none">{selectedTrainer.name}</h2>
-                    <p className="text-[10px] font-bold text-zinc-500 uppercase mt-1">{selectedTrainer.role}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase mt-1">{selectedTrainer.role}</p>
                   </div>
                 </div>
-                <div className="p-3 bg-white/5 rounded-2xl text-primary"><MessageSquare /></div>
+                <div className="p-3 bg-foreground/5 rounded-2xl text-primary"><MessageSquare /></div>
               </header>
 
               <div className="flex-1 overflow-y-auto space-y-4 mb-6 pr-2 scrollbar-hide">
@@ -499,7 +499,7 @@ const Dashboard = () => {
                 )}
                 {chat.map((msg, i) => (
                   <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[85%] p-4 rounded-[1.5rem] text-sm font-bold ${msg.role === 'user' ? 'bg-foreground text-background rounded-tr-none' : 'bg-white/5 text-zinc-300 rounded-tl-none border border-white/5'}`}>
+                    <div className={`max-w-[85%] p-4 rounded-[1.5rem] text-sm font-bold ${msg.role === 'user' ? 'bg-foreground text-background rounded-tr-none' : 'bg-foreground/5 text-foreground rounded-tl-none border border-foreground/5'}`}>
                       {msg.text}
                     </div>
                   </div>
@@ -513,7 +513,7 @@ const Dashboard = () => {
                   onChange={(e) => setMessage(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendAI()}
                   placeholder="Napisz do trenera..."
-                  className="w-full bg-white/5 border border-white/10 p-5 rounded-2xl outline-none font-bold text-sm focus:border-primary transition-all pr-14"
+                  className="w-full bg-foreground/5 border border-foreground/10 p-5 rounded-2xl outline-none font-bold text-sm focus:border-primary transition-all pr-14"
                 />
                 <button 
                   onClick={handleSendAI}
@@ -533,14 +533,14 @@ const Dashboard = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setEditingSteps(false)}
-              className="fixed inset-0 z-[800] bg-black/80 backdrop-blur-sm flex items-end"
+              className="fixed inset-0 z-[800] bg-background/80 backdrop-blur-sm flex items-end"
             >
               <motion.div
                 initial={{ y: 250 }}
                 animate={{ y: 0 }}
                 exit={{ y: 250 }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full bg-zinc-900 rounded-t-[3rem] p-8 border-t border-white/10 space-y-6"
+                className="w-full bg-card rounded-t-[3rem] p-8 border-t border-foreground/10 space-y-6"
               >
                 <h3 className="text-2xl font-black uppercase italic tracking-tighter text-center">Kroki dzisiaj</h3>
                 <input
@@ -548,7 +548,7 @@ const Dashboard = () => {
                   autoFocus
                   value={stepsInput}
                   onChange={(e) => setStepsInput(e.target.value)}
-                  className="w-full bg-black text-5xl font-black italic text-center rounded-2xl p-6 outline-none border border-white/10 tabular-nums"
+                  className="w-full bg-background text-5xl font-black italic text-center rounded-2xl p-6 outline-none border border-foreground/10 tabular-nums"
                   placeholder="0"
                 />
                 <button
@@ -557,7 +557,7 @@ const Dashboard = () => {
                     setStats((s) => ({ ...s, steps: v }));
                     setEditingSteps(false);
                   }}
-                  className="w-full py-6 bg-white text-black rounded-[2rem] font-black uppercase text-xs tracking-widest"
+                  className="w-full py-6 bg-foreground text-background rounded-[2rem] font-black uppercase text-xs tracking-widest"
                 >
                   Zapisz
                 </button>

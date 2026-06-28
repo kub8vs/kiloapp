@@ -60,8 +60,8 @@ const ExerciseMedia = ({ src, className }: { src?: string; className?: string })
   const [failed, setFailed] = useState(false);
   if (!src || failed) {
     return (
-      <div className={`flex items-center justify-center bg-gradient-to-br from-zinc-800 to-black ${className || ''}`}>
-        <Dumbbell className="text-zinc-700" size={28} />
+      <div className={`flex items-center justify-center bg-gradient-to-br from-secondary to-background ${className || ''}`}>
+        <Dumbbell className="text-muted-foreground" size={28} />
       </div>
     );
   }
@@ -114,6 +114,7 @@ const Workout = () => {
     } else {
       document.body.style.overflow = 'auto';
     }
+    return () => { document.body.style.overflow = 'auto'; };
   }, [activeWorkout, editingRoutine, showMultiPicker, viewingExercise, selectedHistoryItem]);
 
   // Timer Silnik
@@ -178,19 +179,19 @@ const Workout = () => {
     return "Solidny progres. Pamiętaj o zasadzie +1: na następnym treningu dołóż 1kg lub wykonaj 1 powtórzenie więcej w kluczowych bojach.";
   };
 
-  if (!isLoaded) return <div className="min-h-screen bg-black" />;
+  if (!isLoaded) return <div className="min-h-screen bg-background" />;
 
   return (
     <AppLayout>
-      <div className="px-5 pt-12 pb-24 space-y-6 bg-black min-h-screen text-zinc-100">
+      <div className="px-5 pt-12 pb-24 space-y-6 bg-background min-h-screen text-foreground">
         
         {/* HEADER */}
         {!activeWorkout && !editingRoutine && (
           <header className="flex justify-between items-center">
             <h1 className="text-3xl font-black uppercase italic tracking-tighter leading-none">ELITE PRO</h1>
-            <div className="flex bg-zinc-900 p-1 rounded-2xl border border-zinc-800">
+            <div className="flex bg-card p-1 rounded-2xl border border-border">
               {[{id:'strength', i:Dumbbell}, {id:'cardio', i:Navigation}, {id:'atlas', i:Video}, {id:'history', i:HistoryIcon}].map(t => (
-                <button key={t.id} onClick={() => setActiveTab(t.id as 'strength' | 'cardio' | 'atlas' | 'history')} className={`p-2 px-4 rounded-xl transition-all ${activeTab === t.id ? 'bg-white text-black shadow-lg' : 'text-zinc-600'}`}>
+                <button key={t.id} onClick={() => setActiveTab(t.id as 'strength' | 'cardio' | 'atlas' | 'history')} className={`p-2 px-4 rounded-xl transition-all ${activeTab === t.id ? 'bg-foreground text-background shadow-lg' : 'text-muted-foreground'}`}>
                   <t.i size={20} />
                 </button>
               ))}
@@ -203,25 +204,25 @@ const Workout = () => {
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <button 
               onClick={() => setActiveWorkout({ id: Date.now().toString(), name: 'Szybki Trening', exercises: [] })}
-              className="w-full bg-blue-600 py-6 rounded-[2rem] font-black uppercase text-xs tracking-widest shadow-xl shadow-blue-600/20"
+              className="w-full bg-brand py-6 rounded-[2rem] font-black uppercase text-xs tracking-widest shadow-xl shadow-brand/20"
             >
               Start Empty Workout
             </button>
 
             <div className="space-y-4">
               <div className="flex justify-between items-center">
-                <h2 className="text-xs font-black uppercase text-zinc-500 tracking-widest">Moje Plany</h2>
+                <h2 className="text-xs font-black uppercase text-muted-foreground tracking-widest">Moje Plany</h2>
                 <button onClick={() => setEditingRoutine({ id: Date.now().toString(), name: 'NOWY PLAN', exercises: [] })} className="p-2"><Plus size={20}/></button>
               </div>
               {routines.map(r => (
-                <div key={r.id} className="bg-zinc-900 border border-zinc-800 p-6 rounded-[2.5rem] flex justify-between items-center">
+                <div key={r.id} className="bg-card border border-border p-6 rounded-[2.5rem] flex justify-between items-center">
                   <div onClick={() => setActiveWorkout(JSON.parse(JSON.stringify(r)))} className="flex-1 cursor-pointer">
                     <h3 className="text-2xl font-black italic uppercase tracking-tighter">{r.name}</h3>
-                    <p className="text-[10px] text-zinc-600 font-bold uppercase">{r.exercises.length} ćwiczeń</p>
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase">{r.exercises.length} ćwiczeń</p>
                   </div>
                   <div className="flex gap-4">
-                    <button onClick={() => setEditingRoutine(r)} className="text-zinc-600"><Edit3 size={18} /></button>
-                    <button onClick={() => { if(confirm("Usunąć?")) { deleteRoutine(r.id); setRoutines(getWorkoutRoutines()); } }} className="text-zinc-800"><Trash2 size={18} /></button>
+                    <button onClick={() => setEditingRoutine(r)} className="text-muted-foreground"><Edit3 size={18} /></button>
+                    <button onClick={() => { if(confirm("Usunąć?")) { deleteRoutine(r.id); setRoutines(getWorkoutRoutines()); } }} className="text-muted-foreground"><Trash2 size={18} /></button>
                   </div>
                 </div>
               ))}
@@ -232,26 +233,26 @@ const Workout = () => {
         {/* CARDIO */}
         {activeTab === 'cardio' && (
           <div className="space-y-6 animate-in fade-in">
-            <div className="w-full aspect-square rounded-[3rem] overflow-hidden border border-zinc-800 bg-zinc-900 relative">
-              {isMapLoading && <div className="absolute inset-0 z-10 bg-zinc-900 flex items-center justify-center animate-pulse" />}
+            <div className="w-full aspect-square rounded-[3rem] overflow-hidden border border-border bg-card relative">
+              {isMapLoading && <div className="absolute inset-0 z-10 bg-card flex items-center justify-center animate-pulse" />}
               <iframe 
                 width="100%" height="100%" frameBorder="0" 
                 style={{ filter: 'grayscale(0.6) contrast(1.2) brightness(0.8)' }}
                 onLoad={() => setIsMapLoading(false)}
                 src={`https://maps.google.com/maps?q=${coords.lat},${coords.lng}&t=k&z=17&output=embed`} 
               />
-              <div className="absolute top-6 left-6 bg-black/80 px-4 py-2 rounded-full border border-white/10 flex items-center gap-2">
+              <div className="absolute top-6 left-6 bg-background/80 px-4 py-2 rounded-full border border-foreground/10 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-[9px] font-black uppercase">GPS LIVE</span>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-800 text-center">
-                <p className="text-[10px] font-black text-zinc-600 uppercase mb-2">DYSTANS KM</p>
+              <div className="bg-card p-8 rounded-[2.5rem] border border-border text-center">
+                <p className="text-[10px] font-black text-muted-foreground uppercase mb-2">DYSTANS KM</p>
                 <p className="text-5xl font-black italic tracking-tighter">{distance.toFixed(2)}</p>
               </div>
-              <div className="bg-zinc-900 p-8 rounded-[2.5rem] border border-zinc-800 text-center">
-                <p className="text-[10px] font-black text-zinc-600 uppercase mb-2">CZAS</p>
+              <div className="bg-card p-8 rounded-[2.5rem] border border-border text-center">
+                <p className="text-[10px] font-black text-muted-foreground uppercase mb-2">CZAS</p>
                 <p className="text-5xl font-black italic tracking-tighter">{formatTime(cardioTime)}</p>
               </div>
             </div>
@@ -279,7 +280,7 @@ const Workout = () => {
                   setIsCardioTracking(true);
                 }
               }}
-              className={`w-full py-7 rounded-[2.5rem] font-black uppercase text-lg ${isCardioTracking ? 'bg-red-600' : 'bg-white text-black'}`}
+              className={`w-full py-7 rounded-[2.5rem] font-black uppercase text-lg ${isCardioTracking ? 'bg-red-600' : 'bg-foreground text-background'}`}
             >
               {isCardioTracking ? 'STOP' : 'START CARDIO'}
             </button>
@@ -290,21 +291,21 @@ const Workout = () => {
         {activeTab === 'atlas' && (
           <div className="space-y-4 animate-in fade-in">
              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-700" size={16} />
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
                 <input 
                   value={search} onChange={(e)=>setSearch(e.target.value)} 
                   placeholder="SZUKAJ ĆWICZENIA..." 
-                  className="w-full bg-zinc-900 border border-zinc-800 p-4 pl-12 rounded-2xl font-black uppercase text-xs text-white outline-none" 
+                  className="w-full bg-card border border-border p-4 pl-12 rounded-2xl font-black uppercase text-xs text-foreground outline-none" 
                 />
              </div>
              {EXERCISE_DB.filter(ex => ex.name.toLowerCase().includes(search.toLowerCase())).map(ex => (
-               <div key={ex.id} onClick={() => setViewingExercise(ex)} className="bg-zinc-900 p-4 rounded-3xl border border-zinc-800 flex items-center gap-4 cursor-pointer">
+               <div key={ex.id} onClick={() => setViewingExercise(ex)} className="bg-card p-4 rounded-3xl border border-border flex items-center gap-4 cursor-pointer">
                  <ExerciseMedia src={ex.video} className="w-14 h-14 rounded-xl object-cover" />
                  <div className="flex-1">
                     <h4 className="font-black text-xs uppercase italic tracking-tight">{ex.name}</h4>
-                    <p className="text-[8px] text-zinc-600 font-bold uppercase">{ex.muscle}</p>
+                    <p className="text-[8px] text-muted-foreground font-bold uppercase">{ex.muscle}</p>
                  </div>
-                 <ChevronRight size={16} className="text-zinc-800" />
+                 <ChevronRight size={16} className="text-muted-foreground" />
                </div>
              ))}
           </div>
@@ -313,26 +314,26 @@ const Workout = () => {
         {/* MODAL: SZCZEGÓŁY ĆWICZENIA (Atlas) */}
         <AnimatePresence>
           {viewingExercise && (
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="fixed inset-0 z-[500] bg-black p-6 overflow-y-auto h-screen">
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="fixed inset-0 z-[500] bg-background p-6 overflow-y-auto h-screen">
               <header className="flex justify-between items-center mb-10">
                 <button onClick={() => setViewingExercise(null)}><ChevronLeft size={30} /></button>
                 <h2 className="font-black uppercase italic tracking-tighter">Elite Atlas</h2>
                 <div className="w-8" />
               </header>
               <div className="space-y-8">
-                <div className="aspect-video w-full rounded-[2.5rem] overflow-hidden border border-zinc-800">
+                <div className="aspect-video w-full rounded-[2.5rem] overflow-hidden border border-border">
                   <ExerciseMedia src={viewingExercise.video} className="w-full h-full object-cover" />
                 </div>
                 <div className="space-y-4">
                   <h1 className="text-4xl font-black italic uppercase leading-none tracking-tighter">{viewingExercise.name}</h1>
-                  <span className="inline-block bg-blue-600/10 text-blue-500 px-3 py-1 rounded-full text-[10px] font-black uppercase">{viewingExercise.muscle}</span>
+                  <span className="inline-block bg-brand/10 text-brand px-3 py-1 rounded-full text-[10px] font-black uppercase">{viewingExercise.muscle}</span>
                   
-                  <div className="bg-zinc-900 p-6 rounded-[2.5rem] border border-zinc-800 space-y-4">
-                    <div className="flex items-center gap-2 text-blue-500">
+                  <div className="bg-card p-6 rounded-[2.5rem] border border-border space-y-4">
+                    <div className="flex items-center gap-2 text-brand">
                       <Zap size={18} />
                       <h4 className="font-black uppercase italic text-xs tracking-widest">Elite Protip</h4>
                     </div>
-                    <p className="text-zinc-400 text-sm font-medium italic leading-relaxed">{viewingExercise.tip}</p>
+                    <p className="text-muted-foreground text-sm font-medium italic leading-relaxed">{viewingExercise.tip}</p>
                   </div>
                 </div>
               </div>
@@ -344,17 +345,17 @@ const Workout = () => {
         {activeTab === 'history' && (
           <div className="space-y-4 animate-in fade-in">
             <div className="flex justify-between items-center px-1">
-               <h2 className="text-xs font-black uppercase text-zinc-500 tracking-widest">Ostatnie sesje</h2>
-               <button onClick={() => { if(confirm("Wyczyścić?")) { clearHistory(); setHistory([]); } }} className="text-zinc-800"><Trash2 size={16}/></button>
+               <h2 className="text-xs font-black uppercase text-muted-foreground tracking-widest">Ostatnie sesje</h2>
+               <button onClick={() => { if(confirm("Wyczyścić?")) { clearHistory(); setHistory([]); } }} className="text-muted-foreground"><Trash2 size={16}/></button>
             </div>
             {history.slice().reverse().map(h => (
-              <div key={h.id} onClick={() => setSelectedHistoryItem(h)} className="bg-zinc-900 border border-zinc-800 p-5 rounded-3xl flex items-center gap-4 cursor-pointer group">
-                <div className="w-12 h-12 rounded-2xl bg-black border border-zinc-800 flex items-center justify-center text-emerald-500">
+              <div key={h.id} onClick={() => setSelectedHistoryItem(h)} className="bg-card border border-border p-5 rounded-3xl flex items-center gap-4 cursor-pointer group">
+                <div className="w-12 h-12 rounded-2xl bg-background border border-border flex items-center justify-center text-emerald-500">
                   {h.type === 'cardio' ? <Navigation size={22} /> : <Dumbbell size={22} />}
                 </div>
                 <div className="flex-1">
                   <h4 className="font-black text-sm uppercase italic tracking-tight">{h.name}</h4>
-                  <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest">{h.date} • {h.duration}</p>
+                  <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">{h.date} • {h.duration}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-black text-emerald-500">{h.details}</p>
@@ -367,7 +368,7 @@ const Workout = () => {
         {/* MODAL: SZCZEGÓŁY HISTORII (WGLĄD W TRENING) */}
         <AnimatePresence>
           {selectedHistoryItem && (
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed inset-0 z-[600] bg-black p-6 overflow-y-auto h-screen">
+            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed inset-0 z-[600] bg-background p-6 overflow-y-auto h-screen">
               <header className="flex justify-between items-center mb-10">
                 <button onClick={() => setSelectedHistoryItem(null)}><ChevronLeft size={30} /></button>
                 <h2 className="font-black uppercase italic tracking-tighter text-xs">Raport Sesji</h2>
@@ -376,48 +377,48 @@ const Workout = () => {
 
               <div className="space-y-8">
                 <div>
-                  <h1 className="text-5xl font-black italic uppercase leading-none tracking-tighter text-blue-500 mb-2">{selectedHistoryItem.name}</h1>
-                  <p className="text-zinc-500 font-black uppercase text-[10px] tracking-[0.2em]">{selectedHistoryItem.date} • {selectedHistoryItem.duration}</p>
+                  <h1 className="text-5xl font-black italic uppercase leading-none tracking-tighter text-brand mb-2">{selectedHistoryItem.name}</h1>
+                  <p className="text-muted-foreground font-black uppercase text-[10px] tracking-[0.2em]">{selectedHistoryItem.date} • {selectedHistoryItem.duration}</p>
                 </div>
 
                 {/* AI ADVISOR CARD */}
-                <div className="bg-blue-600/10 border border-blue-500/20 p-6 rounded-[2.5rem] space-y-4">
-                  <div className="flex items-center gap-3 text-blue-400">
+                <div className="bg-brand/10 border border-brand/20 p-6 rounded-[2.5rem] space-y-4">
+                  <div className="flex items-center gap-3 text-brand">
                     <BrainCircuit size={24} />
                     <h4 className="font-black uppercase italic text-xs">Elite AI Advisor</h4>
                   </div>
-                  <p className="text-zinc-300 text-sm italic font-medium leading-relaxed">
+                  <p className="text-foreground text-sm italic font-medium leading-relaxed">
                     {generateEliteTip(selectedHistoryItem)}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-800">
-                    <p className="text-[9px] font-black text-zinc-600 uppercase mb-1">Całkowity Ciężar</p>
+                  <div className="bg-card/50 p-6 rounded-[2rem] border border-border">
+                    <p className="text-[9px] font-black text-muted-foreground uppercase mb-1">Całkowity Ciężar</p>
                     <p className="text-2xl font-black italic tabular-nums">{selectedHistoryItem.vol || 0}kg</p>
                   </div>
-                  <div className="bg-zinc-900/50 p-6 rounded-[2rem] border border-zinc-800">
-                    <p className="text-[9px] font-black text-zinc-600 uppercase mb-1">Spalone Kalorie</p>
+                  <div className="bg-card/50 p-6 rounded-[2rem] border border-border">
+                    <p className="text-[9px] font-black text-muted-foreground uppercase mb-1">Spalone Kalorie</p>
                     <p className="text-2xl font-black italic tabular-nums text-orange-500">~{selectedHistoryItem.kcal || 0}kcal</p>
                   </div>
                 </div>
 
                 {/* EXERCISE BREAKDOWN */}
                 <div className="space-y-6 pb-20">
-                  <h3 className="font-black uppercase italic text-xs tracking-widest text-zinc-500 px-1">Rozkład Ćwiczeń</h3>
+                  <h3 className="font-black uppercase italic text-xs tracking-widest text-muted-foreground px-1">Rozkład Ćwiczeń</h3>
                   {selectedHistoryItem.exercises_data?.map((ex, i: number) => (
-                    <div key={i} className="bg-zinc-900/30 rounded-[2.5rem] border border-zinc-800/50 overflow-hidden">
-                      <div className="p-5 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/20">
-                        <span className="font-black uppercase italic text-sm text-blue-400 tracking-tight">{ex.name}</span>
-                        <span className="text-[10px] font-black text-zinc-600 uppercase">{ex.sets.length} SERIE</span>
+                    <div key={i} className="bg-card/30 rounded-[2.5rem] border border-border/50 overflow-hidden">
+                      <div className="p-5 border-b border-border flex justify-between items-center bg-card/20">
+                        <span className="font-black uppercase italic text-sm text-brand tracking-tight">{ex.name}</span>
+                        <span className="text-[10px] font-black text-muted-foreground uppercase">{ex.sets.length} SERIE</span>
                       </div>
                       <div className="p-5 space-y-3">
                         {ex.sets.map((s, si: number) => (
                           <div key={si} className="flex justify-between items-center text-xs font-bold px-2">
-                            <span className="text-zinc-700 uppercase italic">Seria {si+1}</span>
+                            <span className="text-muted-foreground uppercase italic">Seria {si+1}</span>
                             <div className="flex gap-4">
-                              <span>{s.weight} <span className="text-[10px] text-zinc-600">KG</span></span>
-                              <span className="text-blue-500">{s.reps} <span className="text-[10px] text-zinc-400 font-black">POWT</span></span>
+                              <span>{s.weight} <span className="text-[10px] text-muted-foreground">KG</span></span>
+                              <span className="text-brand">{s.reps} <span className="text-[10px] text-muted-foreground font-black">POWT</span></span>
                             </div>
                           </div>
                         ))}
@@ -433,29 +434,29 @@ const Workout = () => {
         {/* MODAL: AKTYWNA SESJA */}
         <AnimatePresence>
           {activeWorkout && !showSaveModal && (
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25 }} className="fixed inset-0 z-[200] bg-black overflow-y-auto pb-40 h-screen">
-              <div className="sticky top-0 bg-black/90 backdrop-blur-xl p-6 border-b border-zinc-900 flex justify-between items-center z-[210]">
-                <button onClick={() => setActiveWorkout(null)}><X size={24} className="text-zinc-600" /></button>
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25 }} className="fixed inset-0 z-[200] bg-background overflow-y-auto pb-40 h-screen">
+              <div className="sticky top-0 bg-background/90 backdrop-blur-xl p-6 border-b border-border flex justify-between items-center z-[210]">
+                <button onClick={() => setActiveWorkout(null)}><X size={24} className="text-muted-foreground" /></button>
                 <div className="text-center">
                   <h2 className="font-black uppercase italic text-sm">{activeWorkout.name}</h2>
-                  <p className="text-[10px] font-bold text-blue-500 tabular-nums">{formatTime(timer)}</p>
+                  <p className="text-[10px] font-bold text-brand tabular-nums">{formatTime(timer)}</p>
                 </div>
-                <button onClick={() => setShowSaveModal(true)} className="bg-blue-600 text-white px-5 py-2 rounded-xl font-black uppercase text-[10px]">Finish</button>
+                <button onClick={() => setShowSaveModal(true)} className="bg-brand text-foreground px-5 py-2 rounded-xl font-black uppercase text-[10px]">Finish</button>
               </div>
 
               <div className="p-4 space-y-6">
                 {activeWorkout.exercises.map((ex, exIdx: number) => (
-                  <div key={exIdx} className="bg-zinc-900 p-6 rounded-[2.5rem] border border-zinc-800 space-y-4">
-                    <h4 className="font-black uppercase italic text-sm text-blue-500">{ex.name}</h4>
-                    <div className="grid grid-cols-5 text-[8px] font-black text-zinc-700 uppercase px-2 text-center">
+                  <div key={exIdx} className="bg-card p-6 rounded-[2.5rem] border border-border space-y-4">
+                    <h4 className="font-black uppercase italic text-sm text-brand">{ex.name}</h4>
+                    <div className="grid grid-cols-5 text-[8px] font-black text-muted-foreground uppercase px-2 text-center">
                       <span>Seria</span><span>Poprz.</span><span>Kg</span><span>Powt.</span><span>✓</span>
                     </div>
                     {ex.sets.map((set, sIdx: number) => (
-                      <div key={sIdx} className={`grid grid-cols-5 items-center p-3 rounded-2xl ${set.completed ? 'bg-emerald-900/20' : 'bg-black/20'}`}>
-                        <span className="text-[10px] font-black text-zinc-800 text-center">{sIdx+1}</span>
-                        <span className="text-[9px] text-zinc-700 italic text-center">—</span>
+                      <div key={sIdx} className={`grid grid-cols-5 items-center p-3 rounded-2xl ${set.completed ? 'bg-emerald-900/20' : 'bg-background/20'}`}>
+                        <span className="text-[10px] font-black text-muted-foreground text-center">{sIdx+1}</span>
+                        <span className="text-[9px] text-muted-foreground italic text-center">—</span>
                         <input 
-                          type="number" className="bg-black w-10 text-center rounded-lg p-2 font-black text-xs outline-none" 
+                          type="number" className="bg-background w-10 text-center rounded-lg p-2 font-black text-xs outline-none" 
                           value={set.weight} onChange={(e)=>{
                             const cp={...activeWorkout}; 
                             cp.exercises[exIdx].sets[sIdx].weight=e.target.value; 
@@ -463,7 +464,7 @@ const Workout = () => {
                           }} 
                         />
                         <input 
-                          type="number" className="bg-black w-10 text-center rounded-lg p-2 font-black text-xs outline-none" 
+                          type="number" className="bg-background w-10 text-center rounded-lg p-2 font-black text-xs outline-none" 
                           value={set.reps} onChange={(e)=>{
                             const cp={...activeWorkout}; 
                             cp.exercises[exIdx].sets[sIdx].reps=e.target.value; 
@@ -477,7 +478,7 @@ const Workout = () => {
                             if(cp.exercises[exIdx].sets[sIdx].completed) { setRestTimer(90); setShowRestOverlay(true); }
                             setActiveWorkout(cp);
                           }} 
-                          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${set.completed ? 'bg-emerald-500 text-black' : 'bg-zinc-800 text-zinc-600'}`}
+                          className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${set.completed ? 'bg-emerald-500 text-background' : 'bg-secondary text-muted-foreground'}`}
                         >
                           <Check size={18} strokeWidth={4} />
                         </button>
@@ -487,21 +488,21 @@ const Workout = () => {
                       const cp={...activeWorkout}; 
                       cp.exercises[exIdx].sets.push({weight:'', reps:'', completed:false}); 
                       setActiveWorkout(cp);
-                    }} className="w-full bg-zinc-800/30 py-2 rounded-xl text-[10px] font-black uppercase text-zinc-700">+ Dodaj Serię</button>
+                    }} className="w-full bg-secondary/30 py-2 rounded-xl text-[10px] font-black uppercase text-muted-foreground">+ Dodaj Serię</button>
                   </div>
                 ))}
-                <button onClick={() => setShowMultiPicker(true)} className="w-full bg-blue-600/10 text-blue-500 py-4 rounded-2xl font-black uppercase text-xs border border-blue-500/20 tracking-widest">+ Dodaj Ćwiczenie</button>
+                <button onClick={() => setShowMultiPicker(true)} className="w-full bg-brand/10 text-brand py-4 rounded-2xl font-black uppercase text-xs border border-brand/20 tracking-widest">+ Dodaj Ćwiczenie</button>
               </div>
 
               {/* REST OVERLAY */}
               <AnimatePresence>
                 {showRestOverlay && (
-                  <motion.div initial={{ y: 200 }} animate={{ y: 0 }} exit={{ y: 200 }} className="fixed bottom-0 left-0 right-0 bg-zinc-900 p-8 rounded-t-[3rem] z-[250] text-center border-t border-zinc-800 shadow-2xl">
-                    <p className="text-zinc-600 font-black uppercase text-[10px] tracking-widest mb-2">Czas na odpoczynek</p>
+                  <motion.div initial={{ y: 200 }} animate={{ y: 0 }} exit={{ y: 200 }} className="fixed bottom-0 left-0 right-0 bg-card p-8 rounded-t-[3rem] z-[250] text-center border-t border-border shadow-2xl">
+                    <p className="text-muted-foreground font-black uppercase text-[10px] tracking-widest mb-2">Czas na odpoczynek</p>
                     <p className="text-7xl font-black italic tracking-tighter tabular-nums mb-6">{formatTime(restTimer)}</p>
                     <div className="flex gap-3">
-                      <button onClick={()=>setRestTimer(p=>p+15)} className="flex-1 bg-zinc-800 py-4 rounded-2xl font-black text-xs">+15s</button>
-                      <button onClick={()=>setShowRestOverlay(false)} className="flex-1 bg-blue-600 py-4 rounded-2xl font-black text-xs uppercase tracking-widest">Skip</button>
+                      <button onClick={()=>setRestTimer(p=>p+15)} className="flex-1 bg-secondary py-4 rounded-2xl font-black text-xs">+15s</button>
+                      <button onClick={()=>setShowRestOverlay(false)} className="flex-1 bg-brand py-4 rounded-2xl font-black text-xs uppercase tracking-widest">Skip</button>
                     </div>
                   </motion.div>
                 )}
@@ -513,10 +514,10 @@ const Workout = () => {
         {/* MODAL: EDYTOR PLANU */}
         <AnimatePresence>
           {editingRoutine && (
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="fixed inset-0 z-[350] bg-black p-6 overflow-y-auto h-screen">
-              <header className="flex justify-between items-center mb-10 text-white">
+            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} className="fixed inset-0 z-[350] bg-background p-6 overflow-y-auto h-screen">
+              <header className="flex justify-between items-center mb-10 text-foreground">
                 <input 
-                  className="bg-transparent text-3xl font-black uppercase italic outline-none border-b border-zinc-800 w-2/3" 
+                  className="bg-transparent text-3xl font-black uppercase italic outline-none border-b border-border w-2/3" 
                   value={editingRoutine.name} 
                   onChange={(e)=>setEditingRoutine({...editingRoutine, name: e.target.value.toUpperCase()})} 
                 />
@@ -524,12 +525,12 @@ const Workout = () => {
               </header>
               <div className="space-y-4 mb-32">
                 {editingRoutine.exercises.map((ex, idx: number) => (
-                  <div key={idx} className="bg-zinc-900 p-5 rounded-3xl border border-zinc-800 flex justify-between items-center">
+                  <div key={idx} className="bg-card p-5 rounded-3xl border border-border flex justify-between items-center">
                     <h4 className="font-black uppercase italic text-xs">{ex.name}</h4>
-                    <button onClick={() => editingRoutine && setEditingRoutine({...editingRoutine, exercises: editingRoutine.exercises.filter((_, i: number)=>i!==idx)})}><Trash2 size={18} className="text-zinc-700"/></button>
+                    <button onClick={() => editingRoutine && setEditingRoutine({...editingRoutine, exercises: editingRoutine.exercises.filter((_, i: number)=>i!==idx)})}><Trash2 size={18} className="text-muted-foreground"/></button>
                   </div>
                 ))}
-                <button onClick={() => setShowMultiPicker(true)} className="w-full py-6 border-2 border-dashed border-zinc-800 rounded-3xl text-zinc-600 font-black uppercase text-[10px] tracking-widest">+ Dodaj Ćwiczenia</button>
+                <button onClick={() => setShowMultiPicker(true)} className="w-full py-6 border-2 border-dashed border-border rounded-3xl text-muted-foreground font-black uppercase text-[10px] tracking-widest">+ Dodaj Ćwiczenia</button>
               </div>
               <div className="fixed bottom-10 left-6 right-6">
                 <button 
@@ -538,7 +539,7 @@ const Workout = () => {
                     setRoutines(getWorkoutRoutines()); 
                     setEditingRoutine(null); 
                   }} 
-                  className="w-full bg-white text-black py-6 rounded-2xl font-black uppercase shadow-2xl tracking-widest"
+                  className="w-full bg-foreground text-background py-6 rounded-2xl font-black uppercase shadow-2xl tracking-widest"
                 >
                   Zapisz Plan
                 </button>
@@ -550,7 +551,7 @@ const Workout = () => {
         {/* MODAL: MULTI PICKER */}
         <AnimatePresence>
           {showMultiPicker && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-black/95 p-6 flex flex-col h-screen">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[400] bg-background/95 p-6 flex flex-col h-screen">
               <div className="flex justify-between items-center mb-10">
                 <h3 className="text-2xl font-black uppercase italic tracking-tighter">Wybierz Ćwiczenia</h3>
                 <button onClick={()=>setShowMultiPicker(false)}><X /></button>
@@ -560,12 +561,12 @@ const Workout = () => {
                   <div 
                     key={ex.id} 
                     onClick={() => setSelectedInPicker(prev => prev.includes(ex.id) ? prev.filter(i => i !== ex.id) : [...prev, ex.id])} 
-                    className={`p-5 rounded-[2rem] border transition-all ${selectedInPicker.includes(ex.id) ? 'bg-zinc-800 border-white' : 'bg-zinc-900 border-zinc-800'}`}
+                    className={`p-5 rounded-[2rem] border transition-all ${selectedInPicker.includes(ex.id) ? 'bg-secondary border-foreground' : 'bg-card border-border'}`}
                   >
                     <div className="flex justify-between items-center">
                       <p className="font-black uppercase text-xs italic tracking-tight">{ex.name}</p>
-                      <div className={`w-6 h-6 rounded-lg border-2 ${selectedInPicker.includes(ex.id) ? 'bg-white border-white' : 'border-zinc-800'}`}>
-                        {selectedInPicker.includes(ex.id) && <Check size={16} className="text-black" />}
+                      <div className={`w-6 h-6 rounded-lg border-2 ${selectedInPicker.includes(ex.id) ? 'bg-foreground border-foreground' : 'border-border'}`}>
+                        {selectedInPicker.includes(ex.id) && <Check size={16} className="text-background" />}
                       </div>
                     </div>
                   </div>
@@ -579,7 +580,7 @@ const Workout = () => {
                 if(editingRoutine) setEditingRoutine({...editingRoutine, exercises: [...editingRoutine.exercises, ...newExs]});
                 if(activeWorkout) setActiveWorkout({...activeWorkout, exercises: [...activeWorkout.exercises, ...newExs]});
                 setSelectedInPicker([]); setShowMultiPicker(false);
-              }} className="mt-6 w-full bg-blue-600 text-white py-6 rounded-[2.5rem] font-black uppercase italic tracking-widest shadow-xl">Dodaj ({selectedInPicker.length})</button>
+              }} className="mt-6 w-full bg-brand text-foreground py-6 rounded-[2.5rem] font-black uppercase italic tracking-widest shadow-xl">Dodaj ({selectedInPicker.length})</button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -587,30 +588,30 @@ const Workout = () => {
         {/* MODAL: ZAPISZ SESJĘ */}
         <AnimatePresence>
           {showSaveModal && activeWorkout && (
-            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed inset-0 z-[450] bg-black p-6 flex flex-col overflow-y-auto h-screen">
+            <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed inset-0 z-[450] bg-background p-6 flex flex-col overflow-y-auto h-screen">
               <header className="flex justify-between items-center mb-10">
                 <button onClick={() => setShowSaveModal(false)}><ChevronLeft size={30} /></button>
                 <h2 className="font-black uppercase italic tracking-tighter">Zakończ Sesję</h2>
                 <div className="w-8" />
               </header>
               <div className="flex-1 space-y-8">
-                <h1 className="text-5xl font-black italic uppercase tracking-tighter text-blue-500 leading-none">{activeWorkout.name}</h1>
+                <h1 className="text-5xl font-black italic uppercase tracking-tighter text-brand leading-none">{activeWorkout.name}</h1>
                 <div className="grid grid-cols-2 gap-4">
-                   <div className="bg-zinc-900 p-6 rounded-[2.5rem] border border-zinc-800">
-                     <p className="text-[10px] font-black text-zinc-600 uppercase mb-1">Czas</p>
+                   <div className="bg-card p-6 rounded-[2.5rem] border border-border">
+                     <p className="text-[10px] font-black text-muted-foreground uppercase mb-1">Czas</p>
                      <p className="text-3xl font-black italic tabular-nums">{formatTime(timer)}</p>
                    </div>
-                   <div className="bg-zinc-900 p-6 rounded-[2.5rem] border border-zinc-800">
-                     <p className="text-[10px] font-black text-zinc-600 uppercase mb-1">Objętość</p>
+                   <div className="bg-card p-6 rounded-[2.5rem] border border-border">
+                     <p className="text-[10px] font-black text-muted-foreground uppercase mb-1">Objętość</p>
                      <p className="text-3xl font-black italic tabular-nums">{calculateVolume(activeWorkout.exercises)}kg</p>
                    </div>
                 </div>
                 <div className="space-y-4">
-                  <h3 className="font-black uppercase italic text-xs text-zinc-500 tracking-widest">Podsumowanie Ćwiczeń</h3>
+                  <h3 className="font-black uppercase italic text-xs text-muted-foreground tracking-widest">Podsumowanie Ćwiczeń</h3>
                   {activeWorkout.exercises.map((ex, i: number) => (
-                    <div key={i} className="flex justify-between items-center p-4 bg-zinc-900/50 rounded-2xl border border-zinc-800">
+                    <div key={i} className="flex justify-between items-center p-4 bg-card/50 rounded-2xl border border-border">
                       <span className="text-xs font-black uppercase italic tracking-tight">{ex.name}</span>
-                      <span className="text-xs font-bold text-zinc-500">{ex.sets.filter((s) => s.completed).length} Serie</span>
+                      <span className="text-xs font-bold text-muted-foreground">{ex.sets.filter((s) => s.completed).length} Serie</span>
                     </div>
                   ))}
                 </div>
@@ -625,7 +626,7 @@ const Workout = () => {
                   });
                   setActiveWorkout(null); setShowSaveModal(false); setHistory(getWorkoutHistory()); setActiveTab('history');
                 }}
-                className="w-full bg-blue-600 py-6 mt-8 rounded-[2.5rem] font-black uppercase italic text-xl shadow-xl shadow-blue-600/20 tracking-widest"
+                className="w-full bg-brand py-6 mt-8 rounded-[2.5rem] font-black uppercase italic text-xl shadow-xl shadow-brand/20 tracking-widest"
               >
                 Zakończ i Zapisz
               </button>
