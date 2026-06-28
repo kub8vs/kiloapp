@@ -4,18 +4,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, ChevronLeft, Zap, Chrome, Apple as AppleIcon, Dumbbell, Home, Target, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { saveUserProfile } from '@/lib/user-store';
+import { saveUserProfile, type UserProfile } from '@/lib/user-store';
+import { ACTIVITY_LEVELS } from '@/lib/nutrition';
 import { auth } from '@/lib/firebase';
 import { GoogleAuthProvider, OAuthProvider, signInWithPopup } from 'firebase/auth';
 
 type Step = 'welcome' | 'auth' | 'basics' | 'activity' | 'training' | 'goal' | 'calculating';
 
-const activityLevels = [
-  { level: 1.2, label: 'Minimalna', desc: 'Brak ćwiczeń, praca siedząca' },
-  { level: 1.375, label: 'Lekka', desc: '1-2 treningi w tygodniu' },
-  { level: 1.55, label: 'Średnia', desc: '3-5 treningów tygodniowo' },
-  { level: 1.725, label: 'Wysoka', desc: 'Ciężka praca fizyczna + treningi' },
-];
+const activityLevels = ACTIVITY_LEVELS;
 
 const trainingStyles = [
   { id: 'gym', label: 'Siłownia', desc: 'Dostęp do pełnego sprzętu', icon: <Dumbbell size={20} /> },
@@ -71,39 +67,25 @@ const Onboarding = () => {
     }
   };
 
-  const calculateMacros = () => {
-    const w = parseFloat(formData.weight) || 70;
-    const h = parseFloat(formData.height) || 170;
-    const a = parseInt(formData.age) || 25;
-
-    let bmr = (10 * w) + (6.25 * h) - (5 * a);
-    bmr = formData.gender === 'male' ? bmr + 5 : bmr - 161;
-
-    const tdee = bmr * formData.activityLevel;
-    let targetKcal = tdee;
-    if (formData.goal === 'cut') targetKcal = tdee - 500;
-    if (formData.goal === 'bulk') targetKcal = tdee + 300;
-
-    return {
-      kcal: Math.round(targetKcal),
-      protein: Math.round(w * 2.2),
-      carbs: Math.round((targetKcal * 0.45) / 4),
-      fat: Math.round((targetKcal * 0.25) / 9),
-    };
-  };
-
   const handleComplete = () => {
     setStep('calculating');
-    const macros = calculateMacros();
-    const profile = {
-      ...formData,
-      ...macros,
+    // Zapisujemy czysty profil. Cele kaloryczne/makro liczy centralnie lib/nutrition.ts.
+    const profile: UserProfile = {
+      name: formData.name.trim() || 'Mistrz',
+      age: parseInt(formData.age) || 25,
+      weight: parseFloat(formData.weight) || 70,
+      height: parseFloat(formData.height) || 170,
+      gender: formData.gender,
+      activityLevel: formData.activityLevel, // mnożnik TDEE (1.2–1.9)
+      goal: formData.goal,
+      trainingStyle: formData.trainingStyle as UserProfile['trainingStyle'],
+      experience: formData.experience as UserProfile['experience'],
       onboardingCompleted: true,
       createdAt: new Date().toISOString(),
     };
 
     setTimeout(() => {
-      saveUserProfile(profile as any);
+      saveUserProfile(profile);
       window.location.href = '/dashboard';
     }, 2500);
   };

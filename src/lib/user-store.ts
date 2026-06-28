@@ -1,5 +1,6 @@
 import { db, auth } from './firebase';
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import { calculateTargets } from './nutrition';
 
 export interface UserProfile {
   name: string;
@@ -7,8 +8,11 @@ export interface UserProfile {
   weight: number;
   height: number;
   gender: 'male' | 'female';
-  activityLevel: 1 | 2 | 3 | 4 | 5;
+  /** Mnożnik TDEE (1.2–1.9), nie indeks. Patrz lib/nutrition.ts */
+  activityLevel: number;
   goal: 'cut' | 'bulk' | 'recomp';
+  trainingStyle?: 'gym' | 'home';
+  experience?: 'beginner' | 'intermediate' | 'pro';
   onboardingCompleted: boolean;
   createdAt: string;
   avatar?: string;
@@ -25,12 +29,43 @@ export interface DailyStats {
   workoutCompleted: boolean;
 }
 
+export interface MealItem {
+  id: number;
+  name: string;
+  kcal: number;
+  p: number;
+  c: number;
+  f: number;
+  weight: number;
+}
+
+export interface Meal {
+  name: string;
+  items: MealItem[];
+}
+
+export interface DailyLog {
+  date: string;
+  meals: {
+    breakfast: Meal;
+    lunch: Meal;
+    dinner: Meal;
+    snacks: Meal;
+  };
+  water: number;
+}
+
 const KEYS = {
   PROFILE: 'kilo_user_profile',
   STATS: 'kilo_daily_stats',
   ROUTINES: 'kilo_routines',
-  HISTORY: 'kilo_history'
+  HISTORY: 'kilo_history',
+  LOG: 'kilo_daily_log',
+  SHOPPING: 'kilo_shopping_list',
+  STEPS: 'kilo_steps',
 };
+
+const todayKey = () => new Date().toISOString().split('T')[0];
 
 // --- SYNCHRONIZACJA Z CHMURĄ ---
 const syncToCloud = async (key: string, data: any) => {
@@ -79,22 +114,75 @@ export const clearUserProfile = () => {
   window.location.href = '/';
 };
 
-// --- STATYSTYKI ---
-export const getTodayStats = (): DailyStats => {
-  const today = new Date().toISOString().split('T')[0];
+// --- DZIENNY LOG (posiłki + woda) — wspólne źródło dla Diet i Dashboard ---
+const emptyLog = (): DailyLog => ({
+  date: todayKey(),
+  meals: {
+    breakfast: { name: 'Śniadanie', items: [] },
+    lunch: { name: 'Obiad', items: [] },
+    dinner: { name: 'Kolacja', items: [] },
+    snacks: { name: 'Przekąski', items: [] },
+  },
+  water: 0,
+});
+
+export const getDailyLog = (): DailyLog => {
   try {
-    const data = localStorage.getItem(KEYS.STATS);
+    const data = localStorage.getItem(KEYS.LOG);
     if (data) {
-      const stats = JSON.parse(data);
-      if (stats.date === today) return stats;
+      const log = JSON.parse(data) as DailyLog;
+      if (log.date === todayKey()) return log;
     }
-  } catch (e) {}
-  return { date: today, steps: 0, calories: 0, protein: 0, carbs: 0, fat: 0, workoutCompleted: false };
+  } catch (e) {
+    /* brak lub uszkodzony zapis — użyj pustego logu */
+  }
+  return emptyLog();
 };
 
-export const saveDailyStats = (stats: DailyStats): void => {
-  localStorage.setItem(KEYS.STATS, JSON.stringify(stats));
-  syncToCloud('stats', stats);
+export const saveDailyLog = (log: DailyLog): void => {
+  localStorage.setItem(KEYS.LOG, JSON.stringify(log));
+  syncToCloud('dailyLog', log);
+};
+
+// --- KROKI (na razie ręczne/0; docelowo HealthKit / Google Fit) ---
+export const getSteps = (): number => {
+  try {
+    const data = localStorage.getItem(KEYS.STEPS);
+    if (data) {
+      const s = JSON.parse(data);
+      if (s.date === todayKey()) return s.steps || 0;
+    }
+  } catch (e) {
+    /* brak lub uszkodzony zapis — domyślnie 0 */
+  }
+  return 0;
+};
+
+export const saveSteps = (steps: number): void => {
+  localStorage.setItem(KEYS.STEPS, JSON.stringify({ date: todayKey(), steps }));
+};
+
+// --- STATYSTYKI DNIA (liczone z logu, więc zawsze spójne z Dietą) ---
+export const getTodayStats = (): DailyStats => {
+  const log = getDailyLog();
+  let calories = 0, protein = 0, carbs = 0, fat = 0;
+  Object.values(log.meals).forEach((m) =>
+    m.items.forEach((i) => {
+      calories += i.kcal || 0;
+      protein += i.p || 0;
+      carbs += i.c || 0;
+      fat += i.f || 0;
+    }),
+  );
+  return {
+    date: log.date,
+    steps: getSteps(),
+    calories: Math.round(calories),
+    protein: Math.round(protein),
+    carbs: Math.round(carbs),
+    fat: Math.round(fat),
+    workoutCompleted: false,
+  };
 };
 
 // --- TRENINGI I HISTORIA (Rozwiązuje błąd Workout.tsx) ---
@@ -148,26 +236,25 @@ export const clearHistory = () => {
   syncToCloud('history', []);
 };
 
-// --- DIETA I KOMPATYBILNOŚĆ (Rozwiązuje błąd Dashboard.tsx) ---
-export const calculateDailyGoals = (profile: UserProfile) => {
-  const { weight, height, age, gender, activityLevel, goal } = profile;
-  let bmr = (10 * weight) + (6.25 * height) - (5 * age);
-  bmr = gender === 'male' ? bmr + 5 : bmr - 161;
-  const multipliers = [1.2, 1.375, 1.55, 1.725, 1.9];
-  const tdee = bmr * multipliers[activityLevel - 1];
-  let kcal = tdee;
-  if (goal === 'cut') kcal = tdee - 500;
-  else if (goal === 'bulk') kcal = tdee + 300;
-  
-  return {
-    calories: Math.round(kcal),
-    protein: Math.round(weight * 2),
-    carbs: Math.round((kcal * 0.5) / 4),
-    fat: Math.round((kcal * 0.25) / 9),
-    steps: 10000
-  };
+// --- CELE DZIENNE (deleguje do jednego silnika odżywiania: lib/nutrition.ts) ---
+export const calculateDailyGoals = (profile: UserProfile) => calculateTargets(profile);
+
+// --- LISTA ZAKUPÓW (trwała) ---
+export const getShoppingList = (): string[] => {
+  try {
+    return JSON.parse(localStorage.getItem(KEYS.SHOPPING) || '[]');
+  } catch (e) {
+    return [];
+  }
 };
 
-export const addToShoppingList = (title?: string, ingredients?: any[]) => {
-  console.log("Funkcja listy zakupów wywołana (uproszczona):", title);
+export const saveShoppingList = (items: string[]): void => {
+  localStorage.setItem(KEYS.SHOPPING, JSON.stringify(items));
+  syncToCloud('shopping', items);
+};
+
+export const addToShoppingList = (ingredients: string[]): string[] => {
+  const updated = [...new Set([...getShoppingList(), ...ingredients])];
+  saveShoppingList(updated);
+  return updated;
 };

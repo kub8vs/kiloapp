@@ -1,10 +1,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import * as Store from "./user-store";
 
-const API_KEY = "AIzaSyA9uvyWOKyJnbgFXYk92cAitb4WRZTtor8";
-const genAI = new GoogleGenerativeAI(API_KEY);
+// Klucz NIE może być zaszyty w kodzie. Ustaw VITE_GEMINI_API_KEY w pliku .env
+// (patrz .env.example). Docelowo: proxy/Cloud Function zamiast klucza w kliencie.
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
+const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
 export const askTrainer = async (trainerRole: string, userMessage: string) => {
+  if (!genAI) {
+    return "Trener AI jest chwilowo niedostępny — brak konfiguracji klucza API.";
+  }
   try {
     const profile = Store.getUserProfile();
     // Wymuszamy wersję v1, aby uniknąć błędu 404

@@ -1,0 +1,17 @@
+rules_version = '2';
+
+// Reguły bezpieczeństwa Firestore dla KILO.
+// Każdy zalogowany użytkownik ma dostęp WYŁĄCZNIE do swojego dokumentu users/{uid}.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Wszystko inne domyślnie zablokowane.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

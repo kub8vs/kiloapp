@@ -7,7 +7,14 @@ import {
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useToast } from "@/hooks/use-toast";
-import { getUserProfile } from "@/lib/user-store";
+import {
+  getUserProfile,
+  getDailyLog,
+  saveDailyLog,
+  getShoppingList,
+  saveShoppingList,
+} from "@/lib/user-store";
+import { calculateTargets } from "@/lib/nutrition";
 
 const glassStyle = "bg-zinc-900/50 backdrop-blur-xl border border-white/10 shadow-2xl";
 
@@ -87,16 +94,11 @@ const RECIPES = [
 const Diet = () => {
   const { toast } = useToast();
   const [userProfile, setUserProfile] = useState<any>(null);
-  const [meals, setMeals] = useState<any>({
-    breakfast: { name: "Śniadanie", items: [] },
-    lunch: { name: "Obiad", items: [] },
-    dinner: { name: "Kolacja", items: [] },
-    snacks: { name: "Przekąski", items: [] },
-  });
+  const [meals, setMeals] = useState<any>(() => getDailyLog().meals);
 
-  const [shoppingList, setShoppingList] = useState<string[]>([]);
+  const [shoppingList, setShoppingList] = useState<string[]>(() => getShoppingList());
   const [isShoppingListOpen, setIsShoppingListOpen] = useState(false);
-  const [waterGlasses, setWaterGlasses] = useState(0);
+  const [waterGlasses, setWaterGlasses] = useState(() => getDailyLog().water);
   const [activeTab, setActiveTab] = useState<"recipes" | "scanner" | null>(null);
   const [selectedMealKey, setSelectedMealKey] = useState<string | null>("breakfast");
   const [viewingRecipe, setViewingRecipe] = useState<any>(null);
@@ -105,17 +107,21 @@ const Diet = () => {
   useEffect(() => {
     const savedData = getUserProfile();
     if (savedData) {
-      const { weight, height, age, gender, activityLevel, goal } = savedData;
-      let bmr = (10 * weight) + (6.25 * height) - (5 * age);
-      bmr = gender === 'male' ? bmr + 5 : bmr - 161;
-      let tdee = bmr * activityLevel;
-      let targetKcal = goal === 'cut' ? tdee * 0.85 : goal === 'bulk' ? tdee * 1.10 : tdee;
-      const p = weight * 2.2;
-      const f = (targetKcal * 0.25) / 9;
-      const c = (targetKcal - (p * 4) - (f * 9)) / 4;
-      setUserProfile({ kcal: Math.round(targetKcal), p: Math.round(p), c: Math.round(c), f: Math.round(f), weight });
+      // Jedno źródło prawdy: te same cele co na Dashboardzie i w Onboardingu.
+      const t = calculateTargets(savedData);
+      setUserProfile({ kcal: t.calories, p: t.protein, c: t.carbs, f: t.fat, weight: savedData.weight });
     }
   }, []);
+
+  // Trwały zapis dziennika (posiłki + woda) — Dashboard czyta to samo źródło.
+  useEffect(() => {
+    saveDailyLog({ date: new Date().toISOString().split('T')[0], meals, water: waterGlasses });
+  }, [meals, waterGlasses]);
+
+  // Trwały zapis listy zakupów.
+  useEffect(() => {
+    saveShoppingList(shoppingList);
+  }, [shoppingList]);
 
   const dayTotals = useMemo(() => {
     let kcal = 0, p = 0, c = 0, f = 0;
