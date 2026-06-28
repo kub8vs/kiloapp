@@ -53,6 +53,16 @@ tailwind.config.ts  · capacitor.config.ts · src/pages/manifest.json (PWA)
 
 ## ⚠️ Znane problemy / backlog (kolejność wg priorytetu)
 
+> **STATUS (aktualny):** P0 (bezpieczeństwo, silnik kalorii, trwałość) ✅ zrobione.
+> P1 (skaner AI, realne wykresy, kroki, atlas-fallback) ✅ w większości zrobione.
+> P2 (tokeny koloru, makro, theme_color, logo) ✅ zrobione. Dodatkowo: usunięto
+> WSZYSTKIE `any` (lint 0 błędów), działa tryb jasny/ciemny, bilans energii
+> (spalone kcal → budżet dnia, MET/ACSM). Pełny, aktualny plan: **[`ROADMAP.md`](./ROADMAP.md)**.
+> Pozostało (wymaga urządzenia/zasobów): natywne HealthKit/Google Fit, parowanie
+> zegarków, kuratorowane wideo ćwiczeń, zewnętrzna baza produktów; oraz testy (FAZA 4).
+> ⚠️ Ręcznie u właściciela: zrotować klucz Gemini, ustawić `VITE_GEMINI_API_KEY`,
+> wdrożyć `firestore.rules`.
+
 ### P0 — Fundament (zrobić ZANIM dobudujemy funkcje)
 1. **Bezpieczeństwo:** klucz Gemini zaszyty w kliencie (`src/lib/gemini.ts`) → przenieść
    wywołania AI na backend/proxy (np. Firebase Functions) i **zrotować klucz**.
