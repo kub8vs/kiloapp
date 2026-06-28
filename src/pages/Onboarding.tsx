@@ -163,7 +163,7 @@ const Onboarding = () => {
                   <Input type="number" placeholder="Waga kg" value={formData.weight} onChange={(e) => setFormData({ ...formData, weight: e.target.value })} className="h-16 bg-zinc-900 border-zinc-800 rounded-2xl text-center font-bold" />
                   <div className="grid grid-cols-2 gap-4">
                     {['male', 'female'].map((g) => (
-                      <button key={g} onClick={() => setFormData({ ...formData, gender: g as any })} className={`h-16 rounded-2xl font-black uppercase transition-all ${formData.gender === g ? 'bg-white text-black' : 'bg-zinc-900 text-zinc-500'}`}>
+                      <button key={g} onClick={() => setFormData({ ...formData, gender: g as 'male' | 'female' })} className={`h-16 rounded-2xl font-black uppercase transition-all ${formData.gender === g ? 'bg-white text-black' : 'bg-zinc-900 text-zinc-500'}`}>
                         {g === 'male' ? 'Mężczyzna' : 'Kobieta'}
                       </button>
                     ))}
@@ -213,7 +213,7 @@ const Onboarding = () => {
                 <h2 className="text-4xl font-black uppercase italic tracking-tighter">Twój Cel</h2>
                 <div className="grid gap-3">
                   {goals.map((item) => (
-                    <button key={item.id} onClick={() => setFormData({ ...formData, goal: item.id as any })} className={`p-6 rounded-[2.5rem] flex items-center gap-5 border-2 transition-all ${formData.goal === item.id ? 'border-white bg-white/10' : 'border-zinc-900 bg-zinc-900'}`}>
+                    <button key={item.id} onClick={() => setFormData({ ...formData, goal: item.id as 'cut' | 'bulk' | 'recomp' })} className={`p-6 rounded-[2.5rem] flex items-center gap-5 border-2 transition-all ${formData.goal === item.id ? 'border-white bg-white/10' : 'border-zinc-900 bg-zinc-900'}`}>
                       <span className="text-3xl">{item.icon}</span>
                       <div className="text-left">
                         <div className="font-black uppercase italic text-lg leading-none">{item.label}</div>

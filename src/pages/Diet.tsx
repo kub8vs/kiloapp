@@ -14,13 +14,27 @@ import {
   getShoppingList,
   saveShoppingList,
   getTodayBurned,
+  type DailyLog,
+  type Meal,
+  type MealItem,
 } from "@/lib/user-store";
 import { calculateTargets } from "@/lib/nutrition";
+import type { Recipe } from "@/lib/types";
 import { analyzeMealPhoto, type MealAnalysis } from "@/lib/gemini";
 
 const glassStyle = "bg-zinc-900/50 backdrop-blur-xl border border-white/10 shadow-2xl";
 
-const RECIPES = [
+type MealKey = keyof DailyLog['meals'];
+
+interface DietTargets {
+  kcal: number;
+  p: number;
+  c: number;
+  f: number;
+  weight: number;
+}
+
+const RECIPES: Recipe[] = [
   { 
     id: 1, name: "Pancakes Proteinowe", cat: "Śniadanie", kcal: 450, p: 35, c: 45, f: 10, weight: 250,
     difficulty: "Łatwe", ig: "Niskie", time: "15 min", micros: "Potas, Magnez (Regeneracja mięśni)",
@@ -95,15 +109,15 @@ const RECIPES = [
 
 const Diet = () => {
   const { toast } = useToast();
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [meals, setMeals] = useState<any>(() => getDailyLog().meals);
+  const [userProfile, setUserProfile] = useState<DietTargets | null>(null);
+  const [meals, setMeals] = useState<DailyLog['meals']>(() => getDailyLog().meals);
 
   const [shoppingList, setShoppingList] = useState<string[]>(() => getShoppingList());
   const [isShoppingListOpen, setIsShoppingListOpen] = useState(false);
   const [waterGlasses, setWaterGlasses] = useState(() => getDailyLog().water);
   const [activeTab, setActiveTab] = useState<"recipes" | "scanner" | null>(null);
-  const [selectedMealKey, setSelectedMealKey] = useState<string | null>("breakfast");
-  const [viewingRecipe, setViewingRecipe] = useState<any>(null);
+  const [selectedMealKey, setSelectedMealKey] = useState<MealKey>("breakfast");
+  const [viewingRecipe, setViewingRecipe] = useState<Recipe | null>(null);
   const [tempWeight, setTempWeight] = useState(100);
 
   // --- SKANER AI ---
@@ -142,15 +156,23 @@ const Diet = () => {
 
   const dayTotals = useMemo(() => {
     let kcal = 0, p = 0, c = 0, f = 0;
-    Object.values(meals).forEach((m: any) => m.items.forEach((i: any) => {
+    Object.values(meals).forEach((m) => m.items.forEach((i) => {
       kcal += i.kcal; p += i.p; c += i.c; f += i.f;
     }));
     return { kcal, p, c, f };
   }, [meals]);
 
-  const calculateMacros = (item: any, newWeight: number) => {
+  const calculateMacros = (item: Recipe, newWeight: number): MealItem => {
     const factor = newWeight / (item.weight || 100);
-    return { ...item, kcal: Math.round(item.kcal * factor), p: Math.round(item.p * factor), c: Math.round(item.c * factor), f: Math.round(item.f * factor), weight: newWeight };
+    return {
+      id: Date.now(),
+      name: item.name,
+      kcal: Math.round(item.kcal * factor),
+      p: Math.round(item.p * factor),
+      c: Math.round(item.c * factor),
+      f: Math.round(item.f * factor),
+      weight: newWeight,
+    };
   };
 
   const addToShoppingList = (ingredients: string[]) => {
@@ -188,8 +210,8 @@ const Diet = () => {
       f: Math.round(scanResult.f * factor),
       weight: scanWeight,
     };
-    const key = selectedMealKey || "breakfast";
-    setMeals((prev: any) => ({ ...prev, [key]: { ...prev[key], items: [...prev[key].items, item] } }));
+    const key = selectedMealKey;
+    setMeals((prev) => ({ ...prev, [key]: { ...prev[key], items: [...prev[key].items, item] } } as DailyLog['meals']));
     setScanResult(null);
     setActiveTab(null);
     toast({ title: "Dodano do dziennika", description: scanResult.name });
@@ -247,17 +269,17 @@ const Diet = () => {
 
         {/* DZIENNIK */}
         <section className="space-y-4">
-          {Object.entries(meals).map(([key, meal]: [string, any]) => (
+          {(Object.entries(meals) as [MealKey, Meal][]).map(([key, meal]) => (
             <div key={key} className={`p-6 rounded-[2.5rem] ${glassStyle}`}>
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-black uppercase italic tracking-tighter">{meal.name}</h3>
-                <span className="text-xs font-black text-zinc-600">{meal.items.reduce((a: any, b: any) => a + b.kcal, 0)} kcal</span>
+                <span className="text-xs font-black text-zinc-600">{meal.items.reduce((a, b) => a + b.kcal, 0)} kcal</span>
               </div>
               <div className="space-y-3">
-                {meal.items.map((item: any) => (
+                {meal.items.map((item) => (
                   <div key={item.id} className="flex justify-between items-center bg-white/5 p-4 rounded-2xl">
                     <div className="text-xs font-bold uppercase">{item.name} <span className="text-[8px] opacity-30 ml-2">{item.weight}g</span></div>
-                    <button onClick={() => setMeals((prev: any) => ({...prev, [key]: {...meal, items: meal.items.filter((i:any)=>i.id !== item.id)}}))}><Trash2 size={16}/></button>
+                    <button onClick={() => setMeals((prev) => ({...prev, [key]: {...meal, items: meal.items.filter((i)=>i.id !== item.id)}} as DailyLog['meals']))}><Trash2 size={16}/></button>
                   </div>
                 ))}
               </div>
@@ -353,7 +375,7 @@ const Diet = () => {
                   </div>
                   <div className="p-6 space-y-3 shrink-0">
                     <div className="flex gap-2 justify-center flex-wrap">
-                      {Object.entries(meals).map(([key, meal]: [string, any]) => (
+                      {(Object.entries(meals) as [MealKey, Meal][]).map(([key, meal]) => (
                         <button key={key} onClick={() => setSelectedMealKey(key)} className={`px-3 py-2 rounded-full text-[9px] font-black uppercase transition-all ${selectedMealKey === key ? "bg-white text-black" : "bg-zinc-900 text-zinc-500"}`}>
                           {meal.name}
                         </button>
@@ -457,8 +479,9 @@ const Diet = () => {
                             <button onClick={() => setTempWeight(w => w+50)} className="p-5 bg-black rounded-full border border-white/10"><Plus/></button>
                           </div>
                           <button onClick={() => {
+                            if (!viewingRecipe) return;
                             const final = calculateMacros(viewingRecipe, tempWeight);
-                            setMeals((p: any) => ({...p, [selectedMealKey as string]: {...p[selectedMealKey as string], items: [...p[selectedMealKey as string].items, {...final, id: Date.now()}]}}));
+                            setMeals((p) => ({...p, [selectedMealKey]: {...p[selectedMealKey], items: [...p[selectedMealKey].items, {...final, id: Date.now()}]}} as DailyLog['meals']));
                             setViewingRecipe(null); setActiveTab(null); toast({title: "Zapisano w dzienniku"});
                           }} className="w-full py-6 bg-white text-black rounded-[2rem] font-black uppercase text-xs tracking-widest">Dodaj do dziennika</button>
                         </div>

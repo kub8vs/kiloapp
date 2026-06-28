@@ -9,17 +9,18 @@ import {
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import * as Store from "@/lib/user-store";
+import type { HistoryEntry } from "@/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Store.UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingField, setEditingField] = useState<string | null>(null);
-  const [tempValue, setTempValue] = useState<any>(null);
-  const [history, setHistory] = useState<any[]>([]);
-  const [weightLog, setWeightLog] = useState<any[]>([]);
+  const [tempValue, setTempValue] = useState<string | number>('');
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [weightLog, setWeightLog] = useState<Store.WeightEntry[]>([]);
 
   useEffect(() => {
     const data = Store.getUserProfile();
@@ -54,13 +55,14 @@ const Profile = () => {
     );
   }
 
-  const startEditing = (field: string, currentVal: any) => {
+  const startEditing = (field: string, currentVal: string | number) => {
     setEditingField(field);
     setTempValue(currentVal);
   };
 
   const saveEdit = () => {
-    const updates = { [editingField!]: tempValue };
+    if (!profile) return;
+    const updates = { [editingField!]: tempValue } as Partial<Store.UserProfile>;
     Store.updateExtendedProfile(updates);
     setProfile({ ...profile, ...updates });
     if (editingField === 'weight') setWeightLog(Store.addWeightEntry(Number(tempValue)));
@@ -69,8 +71,8 @@ const Profile = () => {
 
   const handleLogout = () => navigate('/onboarding');
 
-  const activityLabels: any = { 1: "Siedzący", 2: "Lekka", 3: "Umiarkowana", 4: "Wysoka", 5: "Ekstremalna" };
-  const goalLabels: any = { cut: "Redukcja", bulk: "Masa", recomp: "Recomp" };
+  const activityLabels: Record<number, string> = { 1: "Siedzący", 2: "Lekka", 3: "Umiarkowana", 4: "Wysoka", 5: "Ekstremalna" };
+  const goalLabels: Record<string, string> = { cut: "Redukcja", bulk: "Masa", recomp: "Recomp" };
 
   // --- KOMPONENTY WYKRESÓW (realne dane z historii i logu wagi) ---
   const EmptyChart = ({ text }: { text: string }) => (

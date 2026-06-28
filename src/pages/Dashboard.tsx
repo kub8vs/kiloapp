@@ -20,10 +20,24 @@ import {
 } from '@/lib/user-store';
 import { askTrainer } from '@/lib/gemini';
 import { setManualSteps } from '@/lib/health';
+import type { Trainer } from '@/lib/types';
 
 const weekDays = ['P', 'W', 'Ś', 'C', 'P', 'S', 'N'];
 
-const TRAINERS = [
+interface QuickRecipe {
+  title: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  time: string;
+  icon: string;
+  image: string;
+  ingredients: { name: string; amount: string; unit: string }[];
+  steps: string[];
+}
+
+const TRAINERS: Trainer[] = [
   { id: 'kamil', name: 'Kamil', role: 'Ekspert Siły', color: 'blue' },
   { id: 'marta', name: 'Marta', role: 'Specjalistka Redukcji', color: 'emerald' },
   { id: 'seba', name: 'Seba', role: 'Motywator Elite', color: 'orange' }
@@ -39,7 +53,7 @@ const Dashboard = () => {
   const [history] = useState(() => getWorkoutHistory());
   const strengthVols = history.filter((h) => h.type !== 'cardio').slice(-8).map((h) => h.vol || 0);
   const [selectedDate] = useState(new Date());
-  const [selectedRecipe, setSelectedRecipe] = useState<any>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<QuickRecipe | null>(null);
   const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem('kiloapp_splash_played'));
 
   // --- STANY TUTORIALA ---
@@ -47,7 +61,7 @@ const Dashboard = () => {
   const [currentStep, setCurrentStep] = useState(0);
 
   // --- STANY AI ---
-  const [selectedTrainer, setSelectedTrainer] = useState<any>(null);
+  const [selectedTrainer, setSelectedTrainer] = useState<Trainer | null>(null);
   const [message, setMessage] = useState('');
   const [chat, setChat] = useState<{role: string, text: string}[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -92,7 +106,7 @@ const Dashboard = () => {
 
   const goals = useMemo(() => profile ? calculateDailyGoals(profile) : null, [profile]);
 
-  const recipes = useMemo(() => [
+  const recipes = useMemo<QuickRecipe[]>(() => [
     {
       title: "Omlet 'Syty Poranek'", kcal: 340, protein: 32, carbs: 12, fat: 18, time: "10 min", icon: "🍳",
       image: "https://images.unsplash.com/photo-1510629954389-c1e0da47d415?q=80&w=800",
@@ -434,7 +448,7 @@ const Dashboard = () => {
                 </div>
                 <div className="space-y-4">
                   <h3 className="font-black uppercase text-xs italic">Składniki</h3>
-                  {selectedRecipe.ingredients.map((ing: any, i: number) => (
+                  {selectedRecipe.ingredients.map((ing, i: number) => (
                     <div key={i} className="flex justify-between p-4 bg-white/5 rounded-2xl text-xs font-bold">
                       <span>{ing.name}</span>
                       <span className="text-primary">{ing.amount} {ing.unit}</span>

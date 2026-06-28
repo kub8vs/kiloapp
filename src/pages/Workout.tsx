@@ -13,9 +13,10 @@ import {
   deleteHistoryItem, clearHistory, saveRoutine, deleteRoutine, getUserProfile
 } from '@/lib/user-store';
 import { cardioCalories, strengthCalories } from '@/lib/exercise-calories';
+import type { Routine, ExerciseInstance, HistoryEntry, AtlasExercise } from '@/lib/types';
 
 // --- GIGANTYCZNA BAZA 30 ĆWICZEŃ Z PROTIPAMI (Atlas) ---
-const EXERCISE_DB = [
+const EXERCISE_DB: AtlasExercise[] = [
   // KLATKA (Chest)
   { id: 'ch1', name: 'Wyciskanie Sztangi (Płaska)', muscle: 'Klatka piersiowa', video: 'https://media.giphy.com/media/3o7TKMGpxx66C3GZpu/giphy.gif', tip: 'Wbij łopatki w ławkę i zachowaj lekką restrykcję w lędźwiach (mostek). Prowadź łokcie pod kątem 45 stopni względem tułowia.' },
   { id: 'ch2', name: 'Wyciskanie Hantli (Skos)', muscle: 'Klatka piersiowa', video: 'https://media.giphy.com/media/3o7TKMGpxx66C3GZpu/giphy.gif', tip: 'Skup się na kontrolowanym rozciągnięciu klatki w dolnej fazie. Nie blokuj łokci w pełnym wyproście.' },
@@ -70,16 +71,16 @@ const ExerciseMedia = ({ src, className }: { src?: string; className?: string })
 const Workout = () => {
   // --- STANY CORE ---
   const [activeTab, setActiveTab] = useState<'strength' | 'cardio' | 'atlas' | 'history'>('strength');
-  const [routines, setRoutines] = useState<any[]>([]);
-  const [history, setHistory] = useState<any[]>([]);
+  const [routines, setRoutines] = useState<Routine[]>([]);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const userWeight = getUserProfile()?.weight || 70;
   const [search, setSearch] = useState("");
 
   // --- STANY SESJI TRENINGOWEJ ---
-  const [activeWorkout, setActiveWorkout] = useState<any>(null);
+  const [activeWorkout, setActiveWorkout] = useState<Routine | null>(null);
   const [showSaveModal, setShowSaveModal] = useState(false);
-  const [selectedHistoryItem, setSelectedHistoryItem] = useState<any>(null);
+  const [selectedHistoryItem, setSelectedHistoryItem] = useState<HistoryEntry | null>(null);
   const [timer, setTimer] = useState(0);
   const [restTimer, setRestTimer] = useState(0);
   const [showRestOverlay, setShowRestOverlay] = useState(false);
@@ -93,10 +94,10 @@ const Workout = () => {
   const [lastPos, setLastPos] = useState<{lat: number, lng: number} | null>(null);
 
   // --- STANY EDYTORÓW ---
-  const [editingRoutine, setEditingRoutine] = useState<any>(null);
+  const [editingRoutine, setEditingRoutine] = useState<Routine | null>(null);
   const [showMultiPicker, setShowMultiPicker] = useState(false);
   const [selectedInPicker, setSelectedInPicker] = useState<string[]>([]);
-  const [viewingExercise, setViewingExercise] = useState<any>(null);
+  const [viewingExercise, setViewingExercise] = useState<AtlasExercise | null>(null);
 
   // Inicjalizacja danych
   useEffect(() => {
@@ -117,7 +118,7 @@ const Workout = () => {
 
   // Timer Silnik
   useEffect(() => {
-    let interval: any;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (activeWorkout || isCardioTracking) {
       interval = setInterval(() => {
         if (activeWorkout) {
@@ -133,7 +134,7 @@ const Workout = () => {
 
   // GPS & Dystans (Haversine)
   useEffect(() => {
-    let watchId: any;
+    let watchId: number | undefined;
     if (activeTab === 'cardio' || isCardioTracking) {
       watchId = navigator.geolocation.watchPosition((p) => {
         const newPos = { lat: p.coords.latitude, lng: p.coords.longitude };
@@ -150,7 +151,7 @@ const Workout = () => {
         setLastPos(newPos);
       }, null, { enableHighAccuracy: true });
     }
-    return () => navigator.geolocation.clearWatch(watchId);
+    return () => { if (watchId !== undefined) navigator.geolocation.clearWatch(watchId); };
   }, [isCardioTracking, activeTab, lastPos]);
 
   const formatTime = (s: number) => {
@@ -159,13 +160,13 @@ const Workout = () => {
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
-  const calculateVolume = (exercises: any[]) => {
-    return exercises.reduce((acc, ex) => acc + ex.sets.reduce((sAcc: number, set: any) => 
+  const calculateVolume = (exercises: ExerciseInstance[]) => {
+    return exercises.reduce((acc, ex) => acc + ex.sets.reduce((sAcc, set) => 
       sAcc + (set.completed ? (parseFloat(set.weight) || 0) * (parseFloat(set.reps) || 0) : 0), 0), 0);
   };
 
   // --- ELITE PRO AI ADVISOR LOGIC ---
-  const generateEliteTip = (item: any) => {
+  const generateEliteTip = (item: HistoryEntry) => {
     const volume = item.vol || 0;
     const name = item.name.toLowerCase();
     
@@ -189,7 +190,7 @@ const Workout = () => {
             <h1 className="text-3xl font-black uppercase italic tracking-tighter leading-none">ELITE PRO</h1>
             <div className="flex bg-zinc-900 p-1 rounded-2xl border border-zinc-800">
               {[{id:'strength', i:Dumbbell}, {id:'cardio', i:Navigation}, {id:'atlas', i:Video}, {id:'history', i:HistoryIcon}].map(t => (
-                <button key={t.id} onClick={() => setActiveTab(t.id as any)} className={`p-2 px-4 rounded-xl transition-all ${activeTab === t.id ? 'bg-white text-black shadow-lg' : 'text-zinc-600'}`}>
+                <button key={t.id} onClick={() => setActiveTab(t.id as 'strength' | 'cardio' | 'atlas' | 'history')} className={`p-2 px-4 rounded-xl transition-all ${activeTab === t.id ? 'bg-white text-black shadow-lg' : 'text-zinc-600'}`}>
                   <t.i size={20} />
                 </button>
               ))}
@@ -201,7 +202,7 @@ const Workout = () => {
         {activeTab === 'strength' && !activeWorkout && !editingRoutine && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <button 
-              onClick={() => setActiveWorkout({ name: 'Szybki Trening', exercises: [] })}
+              onClick={() => setActiveWorkout({ id: Date.now().toString(), name: 'Szybki Trening', exercises: [] })}
               className="w-full bg-blue-600 py-6 rounded-[2rem] font-black uppercase text-xs tracking-widest shadow-xl shadow-blue-600/20"
             >
               Start Empty Workout
@@ -404,14 +405,14 @@ const Workout = () => {
                 {/* EXERCISE BREAKDOWN */}
                 <div className="space-y-6 pb-20">
                   <h3 className="font-black uppercase italic text-xs tracking-widest text-zinc-500 px-1">Rozkład Ćwiczeń</h3>
-                  {selectedHistoryItem.exercises_data?.map((ex: any, i: number) => (
+                  {selectedHistoryItem.exercises_data?.map((ex, i: number) => (
                     <div key={i} className="bg-zinc-900/30 rounded-[2.5rem] border border-zinc-800/50 overflow-hidden">
                       <div className="p-5 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/20">
                         <span className="font-black uppercase italic text-sm text-blue-400 tracking-tight">{ex.name}</span>
                         <span className="text-[10px] font-black text-zinc-600 uppercase">{ex.sets.length} SERIE</span>
                       </div>
                       <div className="p-5 space-y-3">
-                        {ex.sets.map((s: any, si: number) => (
+                        {ex.sets.map((s, si: number) => (
                           <div key={si} className="flex justify-between items-center text-xs font-bold px-2">
                             <span className="text-zinc-700 uppercase italic">Seria {si+1}</span>
                             <div className="flex gap-4">
@@ -443,13 +444,13 @@ const Workout = () => {
               </div>
 
               <div className="p-4 space-y-6">
-                {activeWorkout.exercises.map((ex: any, exIdx: number) => (
+                {activeWorkout.exercises.map((ex, exIdx: number) => (
                   <div key={exIdx} className="bg-zinc-900 p-6 rounded-[2.5rem] border border-zinc-800 space-y-4">
                     <h4 className="font-black uppercase italic text-sm text-blue-500">{ex.name}</h4>
                     <div className="grid grid-cols-5 text-[8px] font-black text-zinc-700 uppercase px-2 text-center">
                       <span>Seria</span><span>Poprz.</span><span>Kg</span><span>Powt.</span><span>✓</span>
                     </div>
-                    {ex.sets.map((set: any, sIdx: number) => (
+                    {ex.sets.map((set, sIdx: number) => (
                       <div key={sIdx} className={`grid grid-cols-5 items-center p-3 rounded-2xl ${set.completed ? 'bg-emerald-900/20' : 'bg-black/20'}`}>
                         <span className="text-[10px] font-black text-zinc-800 text-center">{sIdx+1}</span>
                         <span className="text-[9px] text-zinc-700 italic text-center">—</span>
@@ -522,10 +523,10 @@ const Workout = () => {
                 <button onClick={() => setEditingRoutine(null)}><X size={30}/></button>
               </header>
               <div className="space-y-4 mb-32">
-                {editingRoutine.exercises.map((ex: any, idx: number) => (
+                {editingRoutine.exercises.map((ex, idx: number) => (
                   <div key={idx} className="bg-zinc-900 p-5 rounded-3xl border border-zinc-800 flex justify-between items-center">
                     <h4 className="font-black uppercase italic text-xs">{ex.name}</h4>
-                    <button onClick={() => setEditingRoutine({...editingRoutine, exercises: editingRoutine.exercises.filter((_:any,i:number)=>i!==idx)})}><Trash2 size={18} className="text-zinc-700"/></button>
+                    <button onClick={() => editingRoutine && setEditingRoutine({...editingRoutine, exercises: editingRoutine.exercises.filter((_, i: number)=>i!==idx)})}><Trash2 size={18} className="text-zinc-700"/></button>
                   </div>
                 ))}
                 <button onClick={() => setShowMultiPicker(true)} className="w-full py-6 border-2 border-dashed border-zinc-800 rounded-3xl text-zinc-600 font-black uppercase text-[10px] tracking-widest">+ Dodaj Ćwiczenia</button>
@@ -533,7 +534,7 @@ const Workout = () => {
               <div className="fixed bottom-10 left-6 right-6">
                 <button 
                   onClick={() => { 
-                    saveRoutine(editingRoutine); 
+                    if (editingRoutine) saveRoutine(editingRoutine);
                     setRoutines(getWorkoutRoutines()); 
                     setEditingRoutine(null); 
                   }} 
@@ -585,7 +586,7 @@ const Workout = () => {
 
         {/* MODAL: ZAPISZ SESJĘ */}
         <AnimatePresence>
-          {showSaveModal && (
+          {showSaveModal && activeWorkout && (
             <motion.div initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} className="fixed inset-0 z-[450] bg-black p-6 flex flex-col overflow-y-auto h-screen">
               <header className="flex justify-between items-center mb-10">
                 <button onClick={() => setShowSaveModal(false)}><ChevronLeft size={30} /></button>
@@ -606,10 +607,10 @@ const Workout = () => {
                 </div>
                 <div className="space-y-4">
                   <h3 className="font-black uppercase italic text-xs text-zinc-500 tracking-widest">Podsumowanie Ćwiczeń</h3>
-                  {activeWorkout.exercises.map((ex: any, i: number) => (
+                  {activeWorkout.exercises.map((ex, i: number) => (
                     <div key={i} className="flex justify-between items-center p-4 bg-zinc-900/50 rounded-2xl border border-zinc-800">
                       <span className="text-xs font-black uppercase italic tracking-tight">{ex.name}</span>
-                      <span className="text-xs font-bold text-zinc-500">{ex.sets.filter((s: any) => s.completed).length} Serie</span>
+                      <span className="text-xs font-bold text-zinc-500">{ex.sets.filter((s) => s.completed).length} Serie</span>
                     </div>
                   ))}
                 </div>

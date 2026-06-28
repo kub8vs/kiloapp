@@ -26,7 +26,7 @@ export const askTrainer = async (trainerRole: string, userMessage: string) => {
 
     const response = await result.response;
     return response.text();
-  } catch (error: any) {
+  } catch (error) {
     console.error("Błąd AI:", error);
     return "Trener ma teraz przerwę. Spróbuj za chwilę!";
   }
@@ -75,7 +75,7 @@ export const analyzeMealPhoto = async (imageDataUrl: string): Promise<MealAnalys
       f: Math.max(0, Math.round(Number(parsed.f) || 0)),
       weight: Math.max(1, Math.round(Number(parsed.weight) || 100)),
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Błąd analizy zdjęcia:", error);
     return null;
   }

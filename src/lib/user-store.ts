@@ -1,7 +1,7 @@
 import { db, auth } from './firebase';
-import { doc, setDoc, getDoc } from "firebase/firestore";
+import { doc, setDoc, getDoc, type DocumentData } from "firebase/firestore";
 import { calculateTargets } from './nutrition';
-import type { HistoryEntry } from './types';
+import type { HistoryEntry, Routine } from './types';
 
 export interface UserProfile {
   name: string;
@@ -70,12 +70,12 @@ const KEYS = {
 const todayKey = () => new Date().toISOString().split('T')[0];
 
 // --- SYNCHRONIZACJA Z CHMURĄ ---
-const syncToCloud = async (key: string, data: any) => {
+const syncToCloud = async (key: string, data: unknown) => {
   try {
     const user = auth?.currentUser;
-    if (!user) return; 
+    if (!user) return;
     const userRef = doc(db, "users", user.uid);
-    await setDoc(userRef, { [key]: data }, { merge: true });
+    await setDoc(userRef, { [key]: data } as DocumentData, { merge: true });
   } catch (e) {
     console.warn("Błąd synchronizacji Firebase:", e);
   }
@@ -214,18 +214,18 @@ export const getTodayStats = (): DailyStats => {
 };
 
 // --- TRENINGI I HISTORIA (Rozwiązuje błąd Workout.tsx) ---
-export const getWorkoutRoutines = () => {
+export const getWorkoutRoutines = (): Routine[] => {
   try {
     const data = localStorage.getItem(KEYS.ROUTINES);
     return data ? JSON.parse(data) : [];
   } catch (e) { return []; }
 };
 
-export const saveRoutine = (routine: any) => {
+export const saveRoutine = (routine: Routine) => {
   const current = getWorkoutRoutines();
-  const exists = current.findIndex((r: any) => r.id === routine.id);
-  const updated = exists > -1 
-    ? current.map((r: any) => r.id === routine.id ? routine : r) 
+  const exists = current.findIndex((r) => r.id === routine.id);
+  const updated = exists > -1
+    ? current.map((r) => r.id === routine.id ? routine : r)
     : [...current, routine];
   localStorage.setItem(KEYS.ROUTINES, JSON.stringify(updated));
   syncToCloud('routines', updated);
@@ -233,7 +233,7 @@ export const saveRoutine = (routine: any) => {
 
 export const deleteRoutine = (id: string) => {
   const current = getWorkoutRoutines();
-  const updated = current.filter((r: any) => r.id !== id);
+  const updated = current.filter((r) => r.id !== id);
   localStorage.setItem(KEYS.ROUTINES, JSON.stringify(updated));
   syncToCloud('routines', updated);
 };
@@ -253,7 +253,7 @@ export const getTodayBurned = (): number => {
     .reduce((sum, h) => sum + (h.kcal || 0), 0);
 };
 
-export const addToHistory = (entry: any) => {
+export const addToHistory = (entry: HistoryEntry) => {
   const history = getWorkoutHistory();
   const updated = [entry, ...history];
   localStorage.setItem(KEYS.HISTORY, JSON.stringify(updated));
@@ -262,7 +262,7 @@ export const addToHistory = (entry: any) => {
 
 export const deleteHistoryItem = (id: string) => {
   const history = getWorkoutHistory();
-  const updated = history.filter((h: any) => h.id !== id);
+  const updated = history.filter((h) => h.id !== id);
   localStorage.setItem(KEYS.HISTORY, JSON.stringify(updated));
   syncToCloud('history', updated);
 };
