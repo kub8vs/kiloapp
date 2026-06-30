@@ -32,6 +32,35 @@ export const askTrainer = async (trainerRole: string, userMessage: string) => {
   }
 };
 
+export interface PlanDay {
+  day: string;
+  focus: string;
+  exercises: string[];
+}
+
+// Generator tygodniowego planu treningowego (AI, structured JSON). Gotowy do wpięcia w UI.
+export const generateWeeklyPlan = async (
+  goal: string,
+  level: string,
+  env: string,
+): Promise<PlanDay[] | null> => {
+  if (!genAI) return null;
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }, { apiVersion: "v1" });
+    const prompt =
+      `Jesteś trenerem KILO. Ułóż 7-dniowy plan treningowy. Cel: ${goal}. Poziom: ${level}. ` +
+      `Środowisko: ${env}. Odpowiedz WYŁĄCZNIE czystym JSON (bez markdown): ` +
+      `[{"day":"Poniedziałek","focus":"Klatka i triceps","exercises":["Wyciskanie sztangi 4x8","..."]}].`;
+    const result = await model.generateContent(prompt);
+    const text = (await result.response).text();
+    const m = text.match(/\[[\s\S]*\]/);
+    return m ? (JSON.parse(m[0]) as PlanDay[]) : null;
+  } catch (error) {
+    console.error("Błąd generowania planu:", error);
+    return null;
+  }
+};
+
 export interface MealAnalysis {
   name: string;
   kcal: number;
