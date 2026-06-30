@@ -47,5 +47,13 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>KILO używa kamery do skanowania posiłków i kodów kreskowych.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>KILO używa Twojej lokalizacji do śledzenia trasy treningów cardio.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>KILO pozwala dodać zdjęcie posiłku z galerii do analizy.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>KILO wykorzystuje czujnik ruchu do liczenia kroków.</string>
 </dict>
 </plist>

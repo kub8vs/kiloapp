@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,12 +8,13 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { isOnboardingCompleted } from "@/lib/user-store";
 import { initAuth } from "@/lib/auth";
 import KiloLogo from "@/components/KiloLogo";
-import Onboarding from "./pages/Onboarding";
-import Dashboard from "./pages/Dashboard";
-import Workout from "./pages/Workout";
-import Diet from "./pages/Diet";
-import Profile from "./pages/Profile";
-import NotFound from "./pages/NotFound";
+import ErrorBoundary from "@/components/ErrorBoundary";
+const Onboarding = lazy(() => import("./pages/Onboarding"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Workout = lazy(() => import("./pages/Workout"));
+const Diet = lazy(() => import("./pages/Diet"));
+const Profile = lazy(() => import("./pages/Profile"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,8 @@ const App = () => {
             <BootSplash />
           ) : (
             <BrowserRouter>
+              <ErrorBoundary>
+                <Suspense fallback={<BootSplash />}>
               <Routes>
                 <Route
                   path="/"
@@ -61,6 +64,8 @@ const App = () => {
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
+                </Suspense>
+              </ErrorBoundary>
             </BrowserRouter>
           )}
         </TooltipProvider>
