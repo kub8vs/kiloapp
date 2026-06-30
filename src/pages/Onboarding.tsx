@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { saveUserProfile, type UserProfile } from '@/lib/user-store';
 import { ACTIVITY_LEVELS } from '@/lib/nutrition';
 import { linkGoogle, linkApple } from '@/lib/auth';
+import { BILLING_ENABLED, HEALTH_DISCLAIMER } from '@/lib/config';
+import { track } from '@/lib/analytics';
 
 type Step = 'welcome' | 'auth' | 'basics' | 'ageBlock' | 'activity' | 'training' | 'goal' | 'plan' | 'calculating';
 
@@ -77,9 +79,10 @@ const Onboarding = () => {
       onboardingCompleted: true,
       createdAt: new Date().toISOString(),
     };
+    track('onboarding_complete', { plan: formData.plan, goal: formData.goal });
     setTimeout(() => {
       saveUserProfile(profile);
-      window.location.href = '/dashboard';
+      navigate('/dashboard');
     }, 2500);
   };
 
@@ -245,17 +248,19 @@ const Onboarding = () => {
               <div className="space-y-5">
                 <div className="text-center space-y-1">
                   <h2 className="text-4xl font-black uppercase italic tracking-tighter">Wybierz Plan</h2>
-                  <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest">7 dni PRO za darmo</p>
+                  <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest">{BILLING_ENABLED ? '7 dni PRO za darmo' : 'Wersja beta · pełny dostęp za darmo'}</p>
                 </div>
 
-                {/* Billing toggle */}
-                <div className="p-1.5 bg-card rounded-2xl border border-border flex gap-1.5">
-                  {(['monthly', 'yearly'] as const).map((b) => (
-                    <button key={b} onClick={() => setFormData({ ...formData, billing: b })} className={`flex-1 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 ${formData.billing === b ? 'bg-foreground text-background' : 'text-muted-foreground'}`}>
-                      {b === 'monthly' ? 'Miesięcznie' : 'Rocznie · −30%'}
-                    </button>
-                  ))}
-                </div>
+                {/* Billing toggle — tylko gdy płatności włączone */}
+                {BILLING_ENABLED && (
+                  <div className="p-1.5 bg-card rounded-2xl border border-border flex gap-1.5">
+                    {(['monthly', 'yearly'] as const).map((b) => (
+                      <button key={b} onClick={() => setFormData({ ...formData, billing: b })} className={`flex-1 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest transition-all active:scale-95 ${formData.billing === b ? 'bg-foreground text-background' : 'text-muted-foreground'}`}>
+                        {b === 'monthly' ? 'Miesięcznie' : 'Rocznie · −30%'}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 {/* Plan cards */}
                 <div className="space-y-3">
@@ -273,7 +278,13 @@ const Onboarding = () => {
                         <div className="flex items-center justify-between mb-3">
                           <div>
                             <p className="font-black uppercase italic text-lg leading-none">{p.name}</p>
-                            <p className="text-2xl font-black italic mt-1">{fmtPrice(price)}<span className="text-[10px] text-muted-foreground ml-1">{suffix}</span></p>
+                            <p className="text-2xl font-black italic mt-1">
+                              {BILLING_ENABLED ? (
+                                <>{fmtPrice(price)}<span className="text-[10px] text-muted-foreground ml-1">{suffix}</span></>
+                              ) : (
+                                <span className="text-base">W becie za darmo</span>
+                              )}
+                            </p>
                           </div>
                           <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${sel ? 'bg-foreground border-foreground' : 'border-border'}`}>
                             {sel && <Check size={14} className="text-background" />}
@@ -291,8 +302,9 @@ const Onboarding = () => {
                   })}
                 </div>
                 <p className="text-[9px] text-muted-foreground text-center uppercase tracking-wider font-bold">
-                  Anulujesz kiedy chcesz. Płatność uruchomimy po publikacji w sklepie.
+                  {BILLING_ENABLED ? 'Anulujesz kiedy chcesz.' : 'Wersja beta — wszystkie funkcje za darmo.'}
                 </p>
+                <p className="text-[9px] text-muted-foreground text-center leading-relaxed">{HEALTH_DISCLAIMER}</p>
               </div>
             )}
 

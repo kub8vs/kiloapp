@@ -8,13 +8,13 @@ import {
 import AppLayout from "@/components/layout/AppLayout";
 import * as Store from "@/lib/user-store";
 import { ACTIVITY_LEVELS } from "@/lib/nutrition";
+import { HEALTH_DISCLAIMER, APP_VERSION } from "@/lib/config";
 import type { HistoryEntry } from "@/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerDescription, DrawerTrigger, DrawerClose } from "@/components/ui/drawer";
 
 const goalLabels: Record<string, string> = { cut: "Redukcja", bulk: "Masa", recomp: "Recomp" };
-const APP_VERSION = "1.0.0";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -364,7 +364,7 @@ const Profile = () => {
           <button onClick={handleLogout} className="w-full p-5 bg-card rounded-3xl border border-foreground/10 flex items-center gap-4 active:scale-[0.98] transition-all">
             <LogOut size={20} className="text-muted-foreground" /><span className="font-black uppercase italic text-sm">Wyloguj się</span>
           </button>
-          <button onClick={() => { if (confirm("Na pewno usunąć wszystkie dane? Tej operacji nie można cofnąć.")) Store.clearUserProfile(); }} className="w-full p-5 bg-background rounded-3xl border-2 border-foreground flex items-center gap-4 active:scale-95 transition-all">
+          <button onClick={() => { if (confirm("Na pewno usunąć konto i wszystkie dane? Tej operacji nie można cofnąć.")) Store.deleteAccount(); }} className="w-full p-5 bg-background rounded-3xl border-2 border-foreground flex items-center gap-4 active:scale-95 transition-all">
             <Trash2 size={20} /><span className="font-black uppercase italic text-sm">Usuń konto i dane</span>
           </button>
         </div>
@@ -377,6 +377,7 @@ const Profile = () => {
             <button className="w-full flex justify-between items-center text-[11px] font-bold uppercase pt-2 border-t border-foreground/10"><span>Polityka prywatności</span><ChevronRight size={16} className="text-muted-foreground" /></button>
             <button className="w-full flex justify-between items-center text-[11px] font-bold uppercase pt-2 border-t border-foreground/10"><span>Regulamin</span><ChevronRight size={16} className="text-muted-foreground" /></button>
           </div>
+          <p className="text-[9px] text-muted-foreground leading-relaxed px-2 pt-1">{HEALTH_DISCLAIMER}</p>
           <p className="text-center text-[9px] font-bold uppercase tracking-widest text-muted-foreground pt-2">KILO — rozwal system</p>
         </div>
 

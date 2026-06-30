@@ -1,6 +1,9 @@
 import { db, auth } from './firebase';
-import { doc, setDoc, getDoc, type DocumentData } from "firebase/firestore";
+import { doc, setDoc, getDoc, deleteDoc, type DocumentData } from "firebase/firestore";
+import { deleteUser } from "firebase/auth";
+import { z } from "zod";
 import { calculateTargets } from './nutrition';
+import { streakFromLogs } from './streak';
 import type { HistoryEntry, Routine } from './types';
 
 export interface UserProfile {
@@ -84,11 +87,27 @@ const syncToCloud = async (key: string, data: unknown) => {
 };
 
 // --- PROFIL ---
+// Walidacja profilu przy odczycie — uszkodzony zapis nie wywróci aplikacji.
+const ProfileSchema = z.object({
+  name: z.string(),
+  age: z.number(),
+  weight: z.number(),
+  height: z.number(),
+  gender: z.enum(['male', 'female']),
+  activityLevel: z.number(),
+  goal: z.enum(['cut', 'bulk', 'recomp']),
+  onboardingCompleted: z.boolean(),
+}).passthrough();
+
 export const getUserProfile = (): UserProfile | null => {
   try {
     const data = localStorage.getItem(KEYS.PROFILE);
-    return data ? JSON.parse(data) : null;
-  } catch (e) { return null; }
+    if (!data) return null;
+    const parsed = JSON.parse(data);
+    return ProfileSchema.safeParse(parsed).success ? (parsed as UserProfile) : null;
+  } catch (e) {
+    return null;
+  }
 };
 
 export const saveUserProfile = (profile: UserProfile): void => {
@@ -116,6 +135,22 @@ export const clearUserProfile = () => {
   localStorage.clear();
   if (auth) auth.signOut();
   window.location.href = '/';
+};
+
+// Realne usunięcie konta (wymóg App Store 5.1.1): kasuje dokument w Firestore
+// i konto Firebase, potem czyści dane lokalne. Dla kont z dostawcą może być
+// potrzebne ponowne logowanie — wtedy i tak czyścimy lokalnie.
+export const deleteAccount = async (): Promise<void> => {
+  const user = auth?.currentUser;
+  try {
+    if (user) {
+      await deleteDoc(doc(db, 'users', user.uid)).catch(() => {});
+      await deleteUser(user).catch(() => {});
+    }
+  } finally {
+    localStorage.clear();
+    window.location.href = '/';
+  }
 };
 
 // Wlanie danych z chmury do localStorage (po zalogowaniu / na nowym urządzeniu).
@@ -162,7 +197,9 @@ const readLogMap = (): Record<string, DailyLog> => {
 };
 
 export const getDailyLog = (date: string = todayKey()): DailyLog => {
-  return readLogMap()[date] || emptyLog(date);
+  const log = readLogMap()[date];
+  if (!log || typeof log.meals !== 'object' || !log.meals) return emptyLog(date);
+  return log;
 };
 
 export const saveDailyLog = (log: DailyLog): void => {
@@ -174,22 +211,8 @@ export const saveDailyLog = (log: DailyLog): void => {
   syncToCloud('dailyLog', map);
 };
 
-// Seria: kolejne dni z jakąkolwiek aktywnością (posiłek lub woda). Retencja.
-export const getStreak = (): number => {
-  const map = readLogMap();
-  const key = (dt: Date) => dt.toISOString().split('T')[0];
-  const active = (log?: DailyLog) =>
-    !!log && (log.water > 0 || Object.values(log.meals).some((m) => m.items.length > 0));
-  const d = new Date();
-  if (!active(map[key(d)])) d.setDate(d.getDate() - 1); // nie zerujemy w środku dnia
-  let streak = 0;
-  for (let i = 0; i < 400; i++) {
-    if (!active(map[key(d)])) break;
-    streak++;
-    d.setDate(d.getDate() - 1);
-  }
-  return streak;
-};
+// Seria: kolejne dni z aktywnością (posiłek lub woda). Logika w lib/streak.ts (testowana).
+export const getStreak = (): number => streakFromLogs(readLogMap());
 
 // --- KROKI (na razie ręczne/0; docelowo HealthKit / Google Fit) ---
 export const getSteps = (date: string = todayKey()): number => {
