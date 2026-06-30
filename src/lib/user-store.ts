@@ -14,6 +14,8 @@ export interface UserProfile {
   goal: 'cut' | 'bulk' | 'recomp';
   trainingStyle?: 'gym' | 'home';
   experience?: 'beginner' | 'intermediate' | 'pro';
+  plan?: 'free' | 'pro' | 'elite';
+  billing?: 'monthly' | 'yearly';
   onboardingCompleted: boolean;
   createdAt: string;
   avatar?: string;

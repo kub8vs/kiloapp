@@ -190,6 +190,18 @@ const Profile = () => {
           </div>
         </section>
 
+        {/* SUBSKRYPCJA */}
+        <div className="space-y-3">
+          <SectionTitle>Subskrypcja</SectionTitle>
+          <div className="p-2 bg-card rounded-3xl border border-foreground/10 grid grid-cols-3 gap-1.5">
+            {([['free', 'Darmowy'], ['pro', 'KILO PRO'], ['elite', 'KILO ELITE']] as const).map(([id, label]) => (
+              <button key={id} onClick={() => updateField('plan', id)} className={`py-3 rounded-2xl font-black uppercase text-[9px] tracking-tight transition-all active:scale-95 ${(profile.plan || 'free') === id ? 'bg-foreground text-background' : 'text-muted-foreground'}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* PARAMETRY */}
         <div className="space-y-3">
           <SectionTitle>Parametry</SectionTitle>
