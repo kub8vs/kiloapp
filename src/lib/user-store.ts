@@ -118,6 +118,23 @@ export const clearUserProfile = () => {
   window.location.href = '/';
 };
 
+// Wlanie danych z chmury do localStorage (po zalogowaniu / na nowym urządzeniu).
+export const hydrateFromCloud = (data: Record<string, unknown>): void => {
+  const map: Record<string, string> = {
+    profile: KEYS.PROFILE,
+    routines: KEYS.ROUTINES,
+    history: KEYS.HISTORY,
+    dailyLog: KEYS.LOG,
+    shopping: KEYS.SHOPPING,
+    weightLog: KEYS.WEIGHT,
+  };
+  Object.entries(map).forEach(([cloudKey, lsKey]) => {
+    if (data[cloudKey] !== undefined) {
+      try { localStorage.setItem(lsKey, JSON.stringify(data[cloudKey])); } catch (e) { /* ignore */ }
+    }
+  });
+};
+
 // --- DZIENNY LOG (posiłki + woda) — wspólne źródło dla Diet i Dashboard ---
 const emptyLog = (date: string = todayKey()): DailyLog => ({
   date,

@@ -7,8 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { saveUserProfile, type UserProfile } from '@/lib/user-store';
 import { ACTIVITY_LEVELS } from '@/lib/nutrition';
-import { auth } from '@/lib/firebase';
-import { GoogleAuthProvider, OAuthProvider, signInWithPopup } from 'firebase/auth';
+import { linkGoogle, linkApple } from '@/lib/auth';
 
 type Step = 'welcome' | 'auth' | 'basics' | 'ageBlock' | 'activity' | 'training' | 'goal' | 'plan' | 'calculating';
 
@@ -58,17 +57,8 @@ const Onboarding = () => {
     billing: 'yearly' as 'monthly' | 'yearly',
   });
 
-  const handleGoogleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    try { await signInWithPopup(auth, provider); setStep('basics'); }
-    catch (error) { console.error('Błąd Google:', error); }
-  };
-
-  const handleAppleLogin = async () => {
-    const provider = new OAuthProvider('apple.com');
-    try { await signInWithPopup(auth, provider); setStep('basics'); }
-    catch (error) { console.error('Błąd Apple:', error); }
-  };
+  const handleGoogleLogin = async () => { await linkGoogle(); setStep('basics'); };
+  const handleAppleLogin = async () => { await linkApple(); setStep('basics'); };
 
   const handleComplete = () => {
     setStep('calculating');
