@@ -174,6 +174,23 @@ export const saveDailyLog = (log: DailyLog): void => {
   syncToCloud('dailyLog', map);
 };
 
+// Seria: kolejne dni z jakąkolwiek aktywnością (posiłek lub woda). Retencja.
+export const getStreak = (): number => {
+  const map = readLogMap();
+  const key = (dt: Date) => dt.toISOString().split('T')[0];
+  const active = (log?: DailyLog) =>
+    !!log && (log.water > 0 || Object.values(log.meals).some((m) => m.items.length > 0));
+  const d = new Date();
+  if (!active(map[key(d)])) d.setDate(d.getDate() - 1); // nie zerujemy w środku dnia
+  let streak = 0;
+  for (let i = 0; i < 400; i++) {
+    if (!active(map[key(d)])) break;
+    streak++;
+    d.setDate(d.getDate() - 1);
+  }
+  return streak;
+};
+
 // --- KROKI (na razie ręczne/0; docelowo HealthKit / Google Fit) ---
 export const getSteps = (date: string = todayKey()): number => {
   try {

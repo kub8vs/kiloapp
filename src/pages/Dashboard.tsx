@@ -16,7 +16,7 @@ import ProgressRing from '@/components/ui/ProgressRing';
 import KiloLogo from '@/components/KiloLogo';
 import {
   getUserProfile, getTodayStats, calculateDailyGoals,
-  isOnboardingCompleted, getTodayBurned, getWorkoutHistory
+  isOnboardingCompleted, getTodayBurned, getWorkoutHistory, getStreak
 } from '@/lib/user-store';
 import { askTrainer } from '@/lib/gemini';
 import { setManualSteps } from '@/lib/health';
@@ -50,6 +50,7 @@ const Dashboard = () => {
   const [editingSteps, setEditingSteps] = useState(false);
   const [stepsInput, setStepsInput] = useState('');
   const [burned, setBurned] = useState(() => getTodayBurned());
+  const [streak] = useState(() => getStreak());
   const [history] = useState(() => getWorkoutHistory());
   const strengthVols = history.filter((h) => h.type !== 'cardio').slice(-8).map((h) => h.vol || 0);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -267,6 +268,12 @@ const Dashboard = () => {
               </p>
               <h1 className="text-3xl font-black italic uppercase tracking-tighter">Cześć, {profile.name}!</h1>
             </div>
+            {streak > 0 && (
+              <div className="flex items-center gap-1.5 bg-card border border-foreground/10 rounded-full px-3 py-2" title="Seria dni">
+                <Flame size={14} />
+                <span className="text-sm font-black italic tabular-nums">{streak}</span>
+              </div>
+            )}
           </header>
 
           <div className="flex justify-between">

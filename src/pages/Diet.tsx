@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Webcam from "react-webcam";
 import { 
   Camera, X, Loader2, Sparkles, Plus, Minus, BookOpen, Trash2, 
-  ShoppingCart, ChevronRight, Info, Droplets, Zap, CheckCircle2, ListPlus
+  ShoppingCart, ChevronRight, Info, Droplets, Zap, CheckCircle2, ListPlus, Search
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,7 @@ import {
 import { calculateTargets } from "@/lib/nutrition";
 import type { Recipe } from "@/lib/types";
 import { analyzeMealPhoto, type MealAnalysis } from "@/lib/gemini";
+import { searchFood, type FoodResult } from "@/lib/food-api";
 
 const glassStyle = "bg-card/50 backdrop-blur-xl border border-foreground/10 shadow-2xl";
 
@@ -126,6 +127,9 @@ const Diet = () => {
   const [scanResult, setScanResult] = useState<MealAnalysis | null>(null);
   const [scanWeight, setScanWeight] = useState(100);
   const [burned, setBurned] = useState(0);
+  const [foodQuery, setFoodQuery] = useState('');
+  const [foodResults, setFoodResults] = useState<FoodResult[]>([]);
+  const [searching, setSearching] = useState(false);
 
   useEffect(() => {
     const savedData = getUserProfile();
@@ -178,6 +182,19 @@ const Diet = () => {
   const addToShoppingList = (ingredients: string[]) => {
     setShoppingList(prev => [...new Set([...prev, ...ingredients])]);
     toast({ title: "Lista Zakupów", description: "Składniki zostały dodane." });
+  };
+
+  const doFoodSearch = async () => {
+    if (!foodQuery.trim()) return;
+    setSearching(true);
+    setFoodResults(await searchFood(foodQuery));
+    setSearching(false);
+  };
+
+  const addFoodResult = (r: FoodResult) => {
+    const item = { id: Date.now(), name: r.name, kcal: r.kcal, p: r.p, c: r.c, f: r.f, weight: 100 };
+    setMeals((prev) => ({ ...prev, [selectedMealKey]: { ...prev[selectedMealKey], items: [...prev[selectedMealKey].items, item] } } as DailyLog['meals']));
+    toast({ title: "Dodano do dziennika", description: `${r.name} · 100 g` });
   };
 
   const handleScan = async () => {
@@ -488,6 +505,28 @@ const Diet = () => {
                      </div>
                    ) : activeTab === "recipes" && (
                      <div className="space-y-4">
+                        {/* Wyszukiwarka produktów (Open Food Facts) */}
+                        <div className="flex gap-2">
+                          <input
+                            value={foodQuery}
+                            onChange={(e) => setFoodQuery(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && doFoodSearch()}
+                            placeholder="Szukaj produktu (np. jogurt)"
+                            className="flex-1 bg-card border border-foreground/10 rounded-2xl px-4 h-12 text-sm font-bold outline-none focus:border-foreground"
+                          />
+                          <button onClick={doFoodSearch} aria-label="Szukaj produktu" className="h-12 px-4 bg-foreground text-background rounded-2xl active:scale-95 transition-all"><Search size={18} /></button>
+                        </div>
+                        {searching && <p className="text-[10px] uppercase font-black text-muted-foreground tracking-widest text-center py-2">Szukam w bazie...</p>}
+                        {foodResults.map((r, i) => (
+                          <div key={`${r.code}-${i}`} onClick={() => addFoodResult(r)} className="p-4 bg-card rounded-2xl border border-foreground/5 flex justify-between items-center active:scale-95 transition-all">
+                            <div className="min-w-0 pr-3">
+                              <p className="font-bold text-xs uppercase truncate">{r.name}</p>
+                              <p className="text-[9px] text-muted-foreground font-bold uppercase">{r.kcal} kcal · B{r.p} W{r.c} T{r.f} /100g</p>
+                            </div>
+                            <Plus size={18} className="text-foreground shrink-0" />
+                          </div>
+                        ))}
+                        {foodResults.length > 0 && <div className="h-px bg-foreground/10 my-2" />}
                         {RECIPES.map(r => (
                           <div key={r.id} onClick={() => { setViewingRecipe(r); setTempWeight(r.weight); }} className="p-6 bg-card rounded-3xl border border-foreground/5 flex justify-between items-center active:scale-95 transition-all">
                             <p className="font-black uppercase italic tracking-tighter">{r.name}</p>
